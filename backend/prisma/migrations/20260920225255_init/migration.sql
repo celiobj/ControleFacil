@@ -1,0 +1,4 @@
+-- AlterTable
+ALTER TABLE "checklist_items" ADD COLUMN     "phase" TEXT NOT NULL DEFAULT 'ANTES DO LANCE',
+ADD COLUMN     "stage" TEXT NOT NULL DEFAULT '',
+ADD COLUMN     "task" TEXT NOT NULL DEFAULT '';

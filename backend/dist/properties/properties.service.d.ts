@@ -1,0 +1,197 @@
+import { PrismaService } from '../prisma.service';
+import { ChecklistsService } from '../checklists/checklists.service';
+import { PropertyDto } from './dto/property.dto';
+export declare class PropertiesService {
+    private readonly prisma;
+    private readonly checklists;
+    constructor(prisma: PrismaService, checklists: ChecklistsService);
+    findAll(query: {
+        city?: string;
+        neighborhood?: string;
+        status?: any;
+        type?: any;
+        page?: number;
+        limit?: number;
+    }): Promise<{
+        data: ({
+            auction: {
+                id: string;
+                propertyId: string;
+                notes: string | null;
+                auctioneer: string;
+                portal: string | null;
+                processNumber: string | null;
+                appraisalValue: import("@prisma/client/runtime/library").Decimal | null;
+                minimumValue: import("@prisma/client/runtime/library").Decimal | null;
+                auctionValue: import("@prisma/client/runtime/library").Decimal;
+                auctionDate: Date;
+                acquisitionDate: Date | null;
+            } | null;
+            sale: {
+                id: string;
+                propertyId: string;
+                notes: string | null;
+                buyer: string;
+                saleAmount: import("@prisma/client/runtime/library").Decimal;
+                saleDate: Date;
+                brokerage: import("@prisma/client/runtime/library").Decimal;
+                taxes: import("@prisma/client/runtime/library").Decimal;
+            } | null;
+        } & {
+            number: string | null;
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            title: string;
+            description: string | null;
+            status: import(".prisma/client").$Enums.PropertyStatus;
+            notes: string | null;
+            code: string;
+            type: import(".prisma/client").$Enums.PropertyType;
+            address: string;
+            complement: string | null;
+            neighborhood: string;
+            city: string;
+            state: string;
+            zipCode: string | null;
+            totalArea: import("@prisma/client/runtime/library").Decimal | null;
+            builtArea: import("@prisma/client/runtime/library").Decimal | null;
+            registryNumber: string | null;
+        })[];
+        meta: {
+            page: number;
+            limit: number;
+            total: number;
+            pages: number;
+        };
+    }>;
+    findOne(id: string): Promise<{
+        auction: {
+            id: string;
+            propertyId: string;
+            notes: string | null;
+            auctioneer: string;
+            portal: string | null;
+            processNumber: string | null;
+            appraisalValue: import("@prisma/client/runtime/library").Decimal | null;
+            minimumValue: import("@prisma/client/runtime/library").Decimal | null;
+            auctionValue: import("@prisma/client/runtime/library").Decimal;
+            auctionDate: Date;
+            acquisitionDate: Date | null;
+        } | null;
+        expenses: {
+            id: string;
+            propertyId: string;
+            category: import(".prisma/client").$Enums.ExpenseCategory;
+            description: string;
+            notes: string | null;
+            amount: import("@prisma/client/runtime/library").Decimal;
+            date: Date;
+            receiptPath: string | null;
+        }[];
+        renovations: {
+            id: string;
+            propertyId: string;
+            description: string;
+            status: import(".prisma/client").$Enums.RenovationStatus;
+            supplier: string | null;
+            plannedAmount: import("@prisma/client/runtime/library").Decimal | null;
+            actualAmount: import("@prisma/client/runtime/library").Decimal | null;
+            startDate: Date | null;
+            endDate: Date | null;
+        }[];
+        sale: {
+            id: string;
+            propertyId: string;
+            notes: string | null;
+            buyer: string;
+            saleAmount: import("@prisma/client/runtime/library").Decimal;
+            saleDate: Date;
+            brokerage: import("@prisma/client/runtime/library").Decimal;
+            taxes: import("@prisma/client/runtime/library").Decimal;
+        } | null;
+    } & {
+        number: string | null;
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        title: string;
+        description: string | null;
+        status: import(".prisma/client").$Enums.PropertyStatus;
+        notes: string | null;
+        code: string;
+        type: import(".prisma/client").$Enums.PropertyType;
+        address: string;
+        complement: string | null;
+        neighborhood: string;
+        city: string;
+        state: string;
+        zipCode: string | null;
+        totalArea: import("@prisma/client/runtime/library").Decimal | null;
+        builtArea: import("@prisma/client/runtime/library").Decimal | null;
+        registryNumber: string | null;
+    }>;
+    create(data: PropertyDto): Promise<{
+        number: string | null;
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        title: string;
+        description: string | null;
+        status: import(".prisma/client").$Enums.PropertyStatus;
+        notes: string | null;
+        code: string;
+        type: import(".prisma/client").$Enums.PropertyType;
+        address: string;
+        complement: string | null;
+        neighborhood: string;
+        city: string;
+        state: string;
+        zipCode: string | null;
+        totalArea: import("@prisma/client/runtime/library").Decimal | null;
+        builtArea: import("@prisma/client/runtime/library").Decimal | null;
+        registryNumber: string | null;
+    }>;
+    update(id: string, data: Partial<PropertyDto>): Promise<{
+        number: string | null;
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        title: string;
+        description: string | null;
+        status: import(".prisma/client").$Enums.PropertyStatus;
+        notes: string | null;
+        code: string;
+        type: import(".prisma/client").$Enums.PropertyType;
+        address: string;
+        complement: string | null;
+        neighborhood: string;
+        city: string;
+        state: string;
+        zipCode: string | null;
+        totalArea: import("@prisma/client/runtime/library").Decimal | null;
+        builtArea: import("@prisma/client/runtime/library").Decimal | null;
+        registryNumber: string | null;
+    }>;
+    remove(id: string): Promise<{
+        number: string | null;
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        title: string;
+        description: string | null;
+        status: import(".prisma/client").$Enums.PropertyStatus;
+        notes: string | null;
+        code: string;
+        type: import(".prisma/client").$Enums.PropertyType;
+        address: string;
+        complement: string | null;
+        neighborhood: string;
+        city: string;
+        state: string;
+        zipCode: string | null;
+        totalArea: import("@prisma/client/runtime/library").Decimal | null;
+        builtArea: import("@prisma/client/runtime/library").Decimal | null;
+        registryNumber: string | null;
+    }>;
+}

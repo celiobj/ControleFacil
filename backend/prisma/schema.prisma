@@ -1,0 +1,184 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  INVESTIDOR
+  CONSULTA
+}
+enum PropertyStatus {
+  EM_ANALISE
+  ARREMATADO
+  REGULARIZACAO
+  REFORMA
+  PRONTO_PARA_VENDA
+  VENDIDO
+  CANCELADO
+}
+enum PropertyType {
+  CASA
+  APARTAMENTO
+  TERRENO
+  COMERCIAL
+  RURAL
+  OUTRO
+}
+enum ExpenseCategory {
+  ITBI
+  CARTORIO
+  ADVOGADO
+  CONDOMINIO
+  IPTU
+  REFORMA
+  LIMPEZA
+  ENERGIA
+  AGUA
+  FINANCIAMENTO
+  TAXAS
+  OUTROS
+}
+enum RenovationStatus {
+  PLANEJADA
+  EM_ANDAMENTO
+  CONCLUIDA
+}
+enum ChecklistItemStatus {
+  PENDENTE
+  EM_ANDAMENTO
+  CONCLUIDO
+  NAO_APLICAVEL
+}
+
+model User {
+  id           String   @id @default(uuid())
+  name         String
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  role         Role     @default(INVESTIDOR)
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+  @@map("users")
+}
+
+model Property {
+  id              String         @id @default(uuid())
+  code            String         @unique
+  title           String
+  type            PropertyType
+  address         String
+  number          String?
+  complement      String?
+  neighborhood    String
+  city            String
+  state           String
+  zipCode         String?        @map("zip_code")
+  totalArea       Decimal?       @map("total_area") @db.Decimal(12,2)
+  builtArea       Decimal?       @map("built_area") @db.Decimal(12,2)
+  registryNumber  String?        @map("registry_number")
+  description     String?
+  status          PropertyStatus @default(EM_ANALISE)
+  notes           String?
+  createdAt       DateTime       @default(now()) @map("created_at")
+  updatedAt       DateTime       @updatedAt @map("updated_at")
+  auction         Auction?
+  expenses        Expense[]
+  renovations     Renovation[]
+  sale            Sale?
+  checklist       PropertyChecklist?
+  @@index([city, neighborhood, status, type])
+  @@map("properties")
+}
+
+model PropertyChecklist {
+  id          String          @id @default(uuid())
+  propertyId  String          @unique @map("property_id")
+  createdAt   DateTime        @default(now()) @map("created_at")
+  updatedAt   DateTime        @updatedAt @map("updated_at")
+  property    Property        @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  items       ChecklistItem[]
+  @@map("property_checklists")
+}
+
+model ChecklistItem {
+  id           String              @id @default(uuid())
+  checklistId  String              @map("checklist_id")
+  phase        String              @default("ANTES DO LANCE")
+  stage        String              @default("")
+  task         String              @default("")
+  category     String
+  title        String
+  description  String?
+  status       ChecklistItemStatus @default(PENDENTE)
+  responsible  String?
+  dueDate      DateTime?           @map("due_date")
+  completedAt  DateTime?           @map("completed_at")
+  notes        String?
+  sortOrder    Int                 @default(0) @map("sort_order")
+  checklist    PropertyChecklist   @relation(fields: [checklistId], references: [id], onDelete: Cascade)
+  @@index([checklistId, category, status])
+  @@map("checklist_items")
+}
+
+model Auction {
+  id                String   @id @default(uuid())
+  propertyId        String   @unique @map("property_id")
+  auctioneer        String
+  portal            String?
+  processNumber     String?  @map("process_number")
+  appraisalValue    Decimal? @map("appraisal_value") @db.Decimal(14,2)
+  minimumValue      Decimal? @map("minimum_value") @db.Decimal(14,2)
+  auctionValue      Decimal  @map("auction_value") @db.Decimal(14,2)
+  auctionDate       DateTime @map("auction_date")
+  acquisitionDate   DateTime? @map("acquisition_date")
+  notes             String?
+  property          Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  @@map("auctions")
+}
+
+model Expense {
+  id          String          @id @default(uuid())
+  propertyId  String          @map("property_id")
+  category    ExpenseCategory
+  description String
+  amount      Decimal         @db.Decimal(14,2)
+  date        DateTime
+  receiptPath String?         @map("receipt_path")
+  notes       String?
+  property    Property        @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  @@index([propertyId, category, date])
+  @@map("expenses")
+}
+
+model Renovation {
+  id            String           @id @default(uuid())
+  propertyId    String           @map("property_id")
+  description   String
+  supplier      String?
+  plannedAmount Decimal?         @map("planned_amount") @db.Decimal(14,2)
+  actualAmount  Decimal?         @map("actual_amount") @db.Decimal(14,2)
+  startDate     DateTime?        @map("start_date")
+  endDate       DateTime?        @map("end_date")
+  status        RenovationStatus @default(PLANEJADA)
+  property      Property         @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  @@map("renovations")
+}
+
+model Sale {
+  id          String   @id @default(uuid())
+  propertyId  String   @unique @map("property_id")
+  buyer       String
+  saleAmount  Decimal  @map("sale_amount") @db.Decimal(14,2)
+  saleDate    DateTime @map("sale_date")
+  brokerage   Decimal  @default(0) @db.Decimal(14,2)
+  taxes       Decimal  @default(0) @db.Decimal(14,2)
+  notes       String?
+  property    Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  @@map("sales")
+}

@@ -1,0 +1,15 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: controle-facil-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: controle_facil
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - controle_facil_data:/var/lib/postgresql/data
+volumes:
+  controle_facil_data:
