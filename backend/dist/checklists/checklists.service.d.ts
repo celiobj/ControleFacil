@@ -14,19 +14,19 @@ export declare class ChecklistsService {
         notes?: string;
     }): Promise<{
         id: string;
-        sortOrder: number;
-        checklistId: string;
         phase: string;
         stage: string;
         task: string;
-        category: string;
+        responsible: string | null;
         title: string;
         description: string | null;
         status: import(".prisma/client").$Enums.ChecklistItemStatus;
-        responsible: string | null;
+        notes: string | null;
+        sortOrder: number;
+        checklistId: string;
+        category: string;
         dueDate: Date | null;
         completedAt: Date | null;
-        notes: string | null;
     }>;
     updateItem(itemId: string, data: {
         status?: ChecklistItemStatus;
@@ -35,18 +35,18 @@ export declare class ChecklistsService {
         notes?: string;
     }): Promise<{
         id: string;
-        sortOrder: number;
-        checklistId: string;
         phase: string;
         stage: string;
         task: string;
-        category: string;
+        responsible: string | null;
         title: string;
         description: string | null;
         status: import(".prisma/client").$Enums.ChecklistItemStatus;
-        responsible: string | null;
+        notes: string | null;
+        sortOrder: number;
+        checklistId: string;
+        category: string;
         dueDate: Date | null;
         completedAt: Date | null;
-        notes: string | null;
     }>;
 }

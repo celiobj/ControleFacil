@@ -37,6 +37,26 @@ Swagger: http://localhost:3000/docs
 
 Para subir os dois processos pelo diretório raiz: `npm install`, `npm run install:all` e `npm run dev`.
 
+## Build e inicialização com o Windows
+
+O build de produção compila o frontend, compila a API e configura a API para servir os arquivos do frontend no mesmo endereço:
+
+```powershell
+npm run build
+```
+
+Depois do build, registre a inicialização automática para o usuário atual:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\install-startup-task.ps1
+```
+
+Ao entrar no Windows, o atalho `ControleFacil` inicia a aplicação em `http://localhost:3000`. Para remover a inicialização automática:
+
+```powershell
+Remove-Item "$([Environment]::GetFolderPath('Startup'))\ControleFacil.lnk"
+```
+
 ## Variáveis de ambiente
 
 `backend/.env` usa `DATABASE_URL`, `JWT_SECRET`, `PORT` e `UPLOAD_DIR`. O exemplo está em `backend/.env.example`.

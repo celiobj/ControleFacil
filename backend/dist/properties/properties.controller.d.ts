@@ -7,8 +7,8 @@ export declare class PropertiesController {
         data: ({
             auction: {
                 id: string;
-                propertyId: string;
                 notes: string | null;
+                propertyId: string;
                 auctioneer: string;
                 portal: string | null;
                 processNumber: string | null;
@@ -20,8 +20,8 @@ export declare class PropertiesController {
             } | null;
             sale: {
                 id: string;
-                propertyId: string;
                 notes: string | null;
+                propertyId: string;
                 buyer: string;
                 saleAmount: import("@prisma/client/runtime/library").Decimal;
                 saleDate: Date;
@@ -33,11 +33,8 @@ export declare class PropertiesController {
             id: string;
             createdAt: Date;
             updatedAt: Date;
-            title: string;
-            description: string | null;
-            status: import(".prisma/client").$Enums.PropertyStatus;
-            notes: string | null;
             code: string;
+            title: string;
             type: import(".prisma/client").$Enums.PropertyType;
             address: string;
             complement: string | null;
@@ -48,6 +45,9 @@ export declare class PropertiesController {
             totalArea: import("@prisma/client/runtime/library").Decimal | null;
             builtArea: import("@prisma/client/runtime/library").Decimal | null;
             registryNumber: string | null;
+            description: string | null;
+            status: import(".prisma/client").$Enums.PropertyStatus;
+            notes: string | null;
         })[];
         meta: {
             page: number;
@@ -59,8 +59,8 @@ export declare class PropertiesController {
     findOne(id: string): Promise<{
         auction: {
             id: string;
-            propertyId: string;
             notes: string | null;
+            propertyId: string;
             auctioneer: string;
             portal: string | null;
             processNumber: string | null;
@@ -70,47 +70,44 @@ export declare class PropertiesController {
             auctionDate: Date;
             acquisitionDate: Date | null;
         } | null;
-        expenses: {
-            id: string;
-            propertyId: string;
-            category: import(".prisma/client").$Enums.ExpenseCategory;
-            description: string;
-            notes: string | null;
-            amount: import("@prisma/client/runtime/library").Decimal;
-            date: Date;
-            receiptPath: string | null;
-        }[];
-        renovations: {
-            id: string;
-            propertyId: string;
-            description: string;
-            status: import(".prisma/client").$Enums.RenovationStatus;
-            supplier: string | null;
-            plannedAmount: import("@prisma/client/runtime/library").Decimal | null;
-            actualAmount: import("@prisma/client/runtime/library").Decimal | null;
-            startDate: Date | null;
-            endDate: Date | null;
-        }[];
         sale: {
             id: string;
-            propertyId: string;
             notes: string | null;
+            propertyId: string;
             buyer: string;
             saleAmount: import("@prisma/client/runtime/library").Decimal;
             saleDate: Date;
             brokerage: import("@prisma/client/runtime/library").Decimal;
             taxes: import("@prisma/client/runtime/library").Decimal;
         } | null;
+        expenses: {
+            id: string;
+            description: string;
+            notes: string | null;
+            propertyId: string;
+            category: import(".prisma/client").$Enums.ExpenseCategory;
+            amount: import("@prisma/client/runtime/library").Decimal;
+            date: Date;
+            receiptPath: string | null;
+        }[];
+        renovations: {
+            id: string;
+            description: string;
+            status: import(".prisma/client").$Enums.RenovationStatus;
+            propertyId: string;
+            supplier: string | null;
+            plannedAmount: import("@prisma/client/runtime/library").Decimal | null;
+            actualAmount: import("@prisma/client/runtime/library").Decimal | null;
+            startDate: Date | null;
+            endDate: Date | null;
+        }[];
     } & {
         number: string | null;
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        title: string;
-        description: string | null;
-        status: import(".prisma/client").$Enums.PropertyStatus;
-        notes: string | null;
         code: string;
+        title: string;
         type: import(".prisma/client").$Enums.PropertyType;
         address: string;
         complement: string | null;
@@ -121,17 +118,17 @@ export declare class PropertiesController {
         totalArea: import("@prisma/client/runtime/library").Decimal | null;
         builtArea: import("@prisma/client/runtime/library").Decimal | null;
         registryNumber: string | null;
+        description: string | null;
+        status: import(".prisma/client").$Enums.PropertyStatus;
+        notes: string | null;
     }>;
     create(dto: PropertyDto): Promise<{
         number: string | null;
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        title: string;
-        description: string | null;
-        status: import(".prisma/client").$Enums.PropertyStatus;
-        notes: string | null;
         code: string;
+        title: string;
         type: import(".prisma/client").$Enums.PropertyType;
         address: string;
         complement: string | null;
@@ -142,17 +139,17 @@ export declare class PropertiesController {
         totalArea: import("@prisma/client/runtime/library").Decimal | null;
         builtArea: import("@prisma/client/runtime/library").Decimal | null;
         registryNumber: string | null;
+        description: string | null;
+        status: import(".prisma/client").$Enums.PropertyStatus;
+        notes: string | null;
     }>;
     update(id: string, dto: Partial<PropertyDto>): Promise<{
         number: string | null;
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        title: string;
-        description: string | null;
-        status: import(".prisma/client").$Enums.PropertyStatus;
-        notes: string | null;
         code: string;
+        title: string;
         type: import(".prisma/client").$Enums.PropertyType;
         address: string;
         complement: string | null;
@@ -163,17 +160,17 @@ export declare class PropertiesController {
         totalArea: import("@prisma/client/runtime/library").Decimal | null;
         builtArea: import("@prisma/client/runtime/library").Decimal | null;
         registryNumber: string | null;
+        description: string | null;
+        status: import(".prisma/client").$Enums.PropertyStatus;
+        notes: string | null;
     }>;
     remove(id: string): Promise<{
         number: string | null;
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        title: string;
-        description: string | null;
-        status: import(".prisma/client").$Enums.PropertyStatus;
-        notes: string | null;
         code: string;
+        title: string;
         type: import(".prisma/client").$Enums.PropertyType;
         address: string;
         complement: string | null;
@@ -184,5 +181,8 @@ export declare class PropertiesController {
         totalArea: import("@prisma/client/runtime/library").Decimal | null;
         builtArea: import("@prisma/client/runtime/library").Decimal | null;
         registryNumber: string | null;
+        description: string | null;
+        status: import(".prisma/client").$Enums.PropertyStatus;
+        notes: string | null;
     }>;
 }

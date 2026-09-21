@@ -20,35 +20,35 @@ export declare class ChecklistsController {
     get(propertyId: string): Promise<any>;
     add(propertyId: string, dto: ChecklistItemCreateDto): Promise<{
         id: string;
-        sortOrder: number;
-        checklistId: string;
         phase: string;
         stage: string;
         task: string;
-        category: string;
+        responsible: string | null;
         title: string;
         description: string | null;
         status: import(".prisma/client").$Enums.ChecklistItemStatus;
-        responsible: string | null;
+        notes: string | null;
+        sortOrder: number;
+        checklistId: string;
+        category: string;
         dueDate: Date | null;
         completedAt: Date | null;
-        notes: string | null;
     }>;
     update(itemId: string, dto: ChecklistItemUpdateDto): Promise<{
         id: string;
-        sortOrder: number;
-        checklistId: string;
         phase: string;
         stage: string;
         task: string;
-        category: string;
+        responsible: string | null;
         title: string;
         description: string | null;
         status: import(".prisma/client").$Enums.ChecklistItemStatus;
-        responsible: string | null;
+        notes: string | null;
+        sortOrder: number;
+        checklistId: string;
+        category: string;
         dueDate: Date | null;
         completedAt: Date | null;
-        notes: string | null;
     }>;
 }
 export {};
