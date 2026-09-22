@@ -3,7 +3,7 @@ import { IsEnum, IsNumber, IsOptional, IsString, MaxLength } from 'class-validat
 import { PropertyStatus, PropertyType } from '@prisma/client';
 
 export class PropertyDto {
-  @IsString() @MaxLength(30) code!: string;
+  @IsOptional() @IsString() @MaxLength(30) code?: string;
   @IsString() title!: string;
   @IsEnum(PropertyType) type!: PropertyType;
   @IsString() address!: string;

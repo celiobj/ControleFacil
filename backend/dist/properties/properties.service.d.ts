@@ -5,6 +5,7 @@ export declare class PropertiesService {
     private readonly prisma;
     private readonly checklists;
     constructor(prisma: PrismaService, checklists: ChecklistsService);
+    private generateCode;
     findAll(query: {
         city?: string;
         neighborhood?: string;

@@ -1,6 +1,6 @@
 import { PropertyStatus, PropertyType } from '@prisma/client';
 export declare class PropertyDto {
-    code: string;
+    code?: string;
     title: string;
     type: PropertyType;
     address: string;
