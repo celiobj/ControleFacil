@@ -17,6 +17,13 @@ let PropertiesModule = class PropertiesModule {
 };
 exports.PropertiesModule = PropertiesModule;
 exports.PropertiesModule = PropertiesModule = __decorate([
-    (0, common_1.Module)({ imports: [jwt_1.JwtModule.register({ secret: process.env.JWT_SECRET ?? 'change-me' }), checklists_module_1.ChecklistsModule], controllers: [properties_controller_1.PropertiesController], providers: [properties_service_1.PropertiesService, prisma_service_1.PrismaService] })
+    (0, common_1.Module)({
+        imports: [
+            jwt_1.JwtModule.register({ secret: process.env.JWT_SECRET ?? "change-me" }),
+            checklists_module_1.ChecklistsModule,
+        ],
+        controllers: [properties_controller_1.PropertiesController],
+        providers: [properties_service_1.PropertiesService, prisma_service_1.PrismaService],
+    })
 ], PropertiesModule);
 //# sourceMappingURL=properties.module.js.map

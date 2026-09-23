@@ -23,11 +23,21 @@ let PropertiesController = class PropertiesController {
     constructor(service) {
         this.service = service;
     }
-    findAll(query) { return this.service.findAll(query); }
-    findOne(id) { return this.service.findOne(id); }
-    create(dto) { return this.service.create(dto); }
-    update(id, dto) { return this.service.update(id, dto); }
-    remove(id) { return this.service.remove(id); }
+    findAll(query) {
+        return this.service.findAll(query);
+    }
+    findOne(id) {
+        return this.service.findOne(id);
+    }
+    create(dto) {
+        return this.service.create(dto);
+    }
+    update(id, dto) {
+        return this.service.update(id, dto);
+    }
+    remove(id) {
+        return this.service.remove(id);
+    }
 };
 exports.PropertiesController = PropertiesController;
 __decorate([
@@ -38,8 +48,8 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], PropertiesController.prototype, "findAll", null);
 __decorate([
-    (0, common_1.Get)(':id'),
-    __param(0, (0, common_1.Param)('id')),
+    (0, common_1.Get)(":id"),
+    __param(0, (0, common_1.Param)("id")),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", void 0)
@@ -52,25 +62,25 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], PropertiesController.prototype, "create", null);
 __decorate([
-    (0, common_1.Patch)(':id'),
-    __param(0, (0, common_1.Param)('id')),
+    (0, common_1.Patch)(":id"),
+    __param(0, (0, common_1.Param)("id")),
     __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String, Object]),
     __metadata("design:returntype", void 0)
 ], PropertiesController.prototype, "update", null);
 __decorate([
-    (0, common_1.Delete)(':id'),
-    __param(0, (0, common_1.Param)('id')),
+    (0, common_1.Delete)(":id"),
+    __param(0, (0, common_1.Param)("id")),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", void 0)
 ], PropertiesController.prototype, "remove", null);
 exports.PropertiesController = PropertiesController = __decorate([
-    (0, swagger_1.ApiTags)('properties'),
+    (0, swagger_1.ApiTags)("properties"),
     (0, swagger_1.ApiBearerAuth)(),
     (0, common_1.UseGuards)(jwt_guard_1.JwtGuard),
-    (0, common_1.Controller)('properties'),
+    (0, common_1.Controller)("properties"),
     __param(0, (0, common_1.Inject)(properties_service_1.PropertiesService)),
     __metadata("design:paramtypes", [properties_service_1.PropertiesService])
 ], PropertiesController);

@@ -51,11 +51,39 @@ let UsersService = class UsersService {
     constructor(prisma) {
         this.prisma = prisma;
     }
-    list() { return this.prisma.user.findMany({ select: { id: true, name: true, email: true, role: true, active: true, createdAt: true, updatedAt: true }, orderBy: { name: 'asc' } }); }
-    async update(id, data) { if (!(await this.prisma.user.findUnique({ where: { id } })))
-        throw new common_1.NotFoundException('Usuário não encontrado'); const { password, ...rest } = data; return this.prisma.user.update({ where: { id }, data: { ...rest, ...(password ? { passwordHash: await bcrypt.hash(password, 10) } : {}) }, select: { id: true, name: true, email: true, role: true, active: true } }); }
-    updatePassword(id, password) { return this.update(id, { password }); }
-    async remove(id) { return this.update(id, { active: false }); }
+    list() {
+        return this.prisma.user.findMany({
+            select: {
+                id: true,
+                name: true,
+                email: true,
+                role: true,
+                active: true,
+                createdAt: true,
+                updatedAt: true,
+            },
+            orderBy: { name: "asc" },
+        });
+    }
+    async update(id, data) {
+        if (!(await this.prisma.user.findUnique({ where: { id } })))
+            throw new common_1.NotFoundException("Usuário não encontrado");
+        const { password, ...rest } = data;
+        return this.prisma.user.update({
+            where: { id },
+            data: {
+                ...rest,
+                ...(password ? { passwordHash: await bcrypt.hash(password, 10) } : {}),
+            },
+            select: { id: true, name: true, email: true, role: true, active: true },
+        });
+    }
+    updatePassword(id, password) {
+        return this.update(id, { password });
+    }
+    async remove(id) {
+        return this.update(id, { active: false });
+    }
 };
 exports.UsersService = UsersService;
 exports.UsersService = UsersService = __decorate([

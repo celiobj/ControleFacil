@@ -88,36 +88,42 @@ let ChecklistsController = class ChecklistsController {
     constructor(service) {
         this.service = service;
     }
-    get(propertyId) { return this.service.ensure(propertyId); }
-    add(propertyId, dto) { return this.service.addItem(propertyId, dto); }
-    update(itemId, dto) { return this.service.updateItem(itemId, dto); }
+    get(propertyId) {
+        return this.service.ensure(propertyId);
+    }
+    add(propertyId, dto) {
+        return this.service.addItem(propertyId, dto);
+    }
+    update(itemId, dto) {
+        return this.service.updateItem(itemId, dto);
+    }
 };
 exports.ChecklistsController = ChecklistsController;
 __decorate([
-    (0, common_1.Get)('properties/:propertyId/checklist'),
-    __param(0, (0, common_1.Param)('propertyId')),
+    (0, common_1.Get)("properties/:propertyId/checklist"),
+    __param(0, (0, common_1.Param)("propertyId")),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", void 0)
 ], ChecklistsController.prototype, "get", null);
 __decorate([
-    (0, common_1.Post)('properties/:propertyId/checklist/items'),
-    __param(0, (0, common_1.Param)('propertyId')),
+    (0, common_1.Post)("properties/:propertyId/checklist/items"),
+    __param(0, (0, common_1.Param)("propertyId")),
     __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String, ChecklistItemCreateDto]),
     __metadata("design:returntype", void 0)
 ], ChecklistsController.prototype, "add", null);
 __decorate([
-    (0, common_1.Patch)('checklist/items/:itemId'),
-    __param(0, (0, common_1.Param)('itemId')),
+    (0, common_1.Patch)("checklist/items/:itemId"),
+    __param(0, (0, common_1.Param)("itemId")),
     __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String, ChecklistItemUpdateDto]),
     __metadata("design:returntype", void 0)
 ], ChecklistsController.prototype, "update", null);
 exports.ChecklistsController = ChecklistsController = __decorate([
-    (0, swagger_1.ApiTags)('checklists'),
+    (0, swagger_1.ApiTags)("checklists"),
     (0, swagger_1.ApiBearerAuth)(),
     (0, common_1.UseGuards)(jwt_guard_1.JwtGuard),
     (0, common_1.Controller)(),

@@ -19,6 +19,7 @@ const dashboard_module_1 = require("./dashboard/dashboard.module");
 const reports_module_1 = require("./reports/reports.module");
 const users_module_1 = require("./users/users.module");
 const checklists_module_1 = require("./checklists/checklists.module");
+const partners_module_1 = require("./partners/partners.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -26,7 +27,7 @@ exports.AppModule = AppModule = __decorate([
     (0, common_1.Module)({
         imports: [
             config_1.ConfigModule.forRoot({ isGlobal: true }),
-            serve_static_1.ServeStaticModule.forRoot({ rootPath: (0, node_path_1.join)(__dirname, '..', 'public') }),
+            serve_static_1.ServeStaticModule.forRoot({ rootPath: (0, node_path_1.join)(__dirname, "..", "public") }),
             auth_module_1.AuthModule,
             properties_module_1.PropertiesModule,
             operations_module_1.OperationsModule,
@@ -34,6 +35,7 @@ exports.AppModule = AppModule = __decorate([
             reports_module_1.ReportsModule,
             users_module_1.UsersModule,
             checklists_module_1.ChecklistsModule,
+            partners_module_1.PartnersModule,
         ],
         providers: [prisma_service_1.PrismaService],
     })

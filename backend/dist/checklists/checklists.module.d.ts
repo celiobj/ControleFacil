@@ -1,2 +1,1 @@
-export declare class ChecklistsModule {
-}
+export declare class ChecklistsModule {}

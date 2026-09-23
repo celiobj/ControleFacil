@@ -22,7 +22,9 @@ let DashboardController = class DashboardController {
     constructor(service) {
         this.service = service;
     }
-    summary() { return this.service.summary(); }
+    summary() {
+        return this.service.summary();
+    }
 };
 exports.DashboardController = DashboardController;
 __decorate([
@@ -32,10 +34,10 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], DashboardController.prototype, "summary", null);
 exports.DashboardController = DashboardController = __decorate([
-    (0, swagger_1.ApiTags)('dashboard'),
+    (0, swagger_1.ApiTags)("dashboard"),
     (0, swagger_1.ApiBearerAuth)(),
     (0, common_1.UseGuards)(jwt_guard_1.JwtGuard),
-    (0, common_1.Controller)('dashboard'),
+    (0, common_1.Controller)("dashboard"),
     __param(0, (0, common_1.Inject)(dashboard_service_1.DashboardService)),
     __metadata("design:paramtypes", [dashboard_service_1.DashboardService])
 ], DashboardController);

@@ -16,6 +16,16 @@ let AuthModule = class AuthModule {
 };
 exports.AuthModule = AuthModule;
 exports.AuthModule = AuthModule = __decorate([
-    (0, common_1.Module)({ imports: [jwt_1.JwtModule.register({ secret: process.env.JWT_SECRET ?? 'change-me', signOptions: { expiresIn: '8h' } })], controllers: [auth_controller_1.AuthController], providers: [auth_service_1.AuthService, prisma_service_1.PrismaService], exports: [auth_service_1.AuthService] })
+    (0, common_1.Module)({
+        imports: [
+            jwt_1.JwtModule.register({
+                secret: process.env.JWT_SECRET ?? "change-me",
+                signOptions: { expiresIn: "8h" },
+            }),
+        ],
+        controllers: [auth_controller_1.AuthController],
+        providers: [auth_service_1.AuthService, prisma_service_1.PrismaService],
+        exports: [auth_service_1.AuthService],
+    })
 ], AuthModule);
 //# sourceMappingURL=auth.module.js.map

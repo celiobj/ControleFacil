@@ -22,15 +22,15 @@ let JwtGuard = class JwtGuard {
     }
     async canActivate(context) {
         const request = context.switchToHttp().getRequest();
-        const token = request.headers.authorization?.replace('Bearer ', '');
+        const token = request.headers.authorization?.replace("Bearer ", "");
         if (!token)
-            throw new common_1.UnauthorizedException('Token ausente');
+            throw new common_1.UnauthorizedException("Token ausente");
         try {
             request.user = await this.jwt.verifyAsync(token);
             return true;
         }
         catch {
-            throw new common_1.UnauthorizedException('Token inválido');
+            throw new common_1.UnauthorizedException("Token inválido");
         }
     }
 };

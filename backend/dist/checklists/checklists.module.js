@@ -16,6 +16,13 @@ let ChecklistsModule = class ChecklistsModule {
 };
 exports.ChecklistsModule = ChecklistsModule;
 exports.ChecklistsModule = ChecklistsModule = __decorate([
-    (0, common_1.Module)({ imports: [jwt_1.JwtModule.register({ secret: process.env.JWT_SECRET ?? 'change-me' })], controllers: [checklists_controller_1.ChecklistsController], providers: [checklists_service_1.ChecklistsService, prisma_service_1.PrismaService], exports: [checklists_service_1.ChecklistsService] })
+    (0, common_1.Module)({
+        imports: [
+            jwt_1.JwtModule.register({ secret: process.env.JWT_SECRET ?? "change-me" }),
+        ],
+        controllers: [checklists_controller_1.ChecklistsController],
+        providers: [checklists_service_1.ChecklistsService, prisma_service_1.PrismaService],
+        exports: [checklists_service_1.ChecklistsService],
+    })
 ], ChecklistsModule);
 //# sourceMappingURL=checklists.module.js.map

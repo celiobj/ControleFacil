@@ -49,10 +49,18 @@ let UsersController = class UsersController {
     constructor(service) {
         this.service = service;
     }
-    list() { return this.service.list(); }
-    update(id, dto) { return this.service.update(id, dto); }
-    password(id, password) { return this.service.updatePassword(id, password); }
-    remove(id) { return this.service.remove(id); }
+    list() {
+        return this.service.list();
+    }
+    update(id, dto) {
+        return this.service.update(id, dto);
+    }
+    password(id, password) {
+        return this.service.updatePassword(id, password);
+    }
+    remove(id) {
+        return this.service.remove(id);
+    }
 };
 exports.UsersController = UsersController;
 __decorate([
@@ -62,33 +70,33 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], UsersController.prototype, "list", null);
 __decorate([
-    (0, common_1.Patch)(':id'),
-    __param(0, (0, common_1.Param)('id')),
+    (0, common_1.Patch)(":id"),
+    __param(0, (0, common_1.Param)("id")),
     __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String, UserUpdateDto]),
     __metadata("design:returntype", void 0)
 ], UsersController.prototype, "update", null);
 __decorate([
-    (0, common_1.Patch)(':id/password'),
-    __param(0, (0, common_1.Param)('id')),
-    __param(1, (0, common_1.Body)('password')),
+    (0, common_1.Patch)(":id/password"),
+    __param(0, (0, common_1.Param)("id")),
+    __param(1, (0, common_1.Body)("password")),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String, String]),
     __metadata("design:returntype", void 0)
 ], UsersController.prototype, "password", null);
 __decorate([
-    (0, common_1.Delete)(':id'),
-    __param(0, (0, common_1.Param)('id')),
+    (0, common_1.Delete)(":id"),
+    __param(0, (0, common_1.Param)("id")),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", void 0)
 ], UsersController.prototype, "remove", null);
 exports.UsersController = UsersController = __decorate([
-    (0, swagger_1.ApiTags)('users'),
+    (0, swagger_1.ApiTags)("users"),
     (0, swagger_1.ApiBearerAuth)(),
     (0, common_1.UseGuards)(jwt_guard_1.JwtGuard),
-    (0, common_1.Controller)('users'),
+    (0, common_1.Controller)("users"),
     __metadata("design:paramtypes", [users_service_1.UsersService])
 ], UsersController);
 //# sourceMappingURL=users.controller.js.map

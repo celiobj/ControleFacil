@@ -16,6 +16,12 @@ let DashboardModule = class DashboardModule {
 };
 exports.DashboardModule = DashboardModule;
 exports.DashboardModule = DashboardModule = __decorate([
-    (0, common_1.Module)({ imports: [jwt_1.JwtModule.register({ secret: process.env.JWT_SECRET ?? 'change-me' })], controllers: [dashboard_controller_1.DashboardController], providers: [dashboard_service_1.DashboardService, prisma_service_1.PrismaService] })
+    (0, common_1.Module)({
+        imports: [
+            jwt_1.JwtModule.register({ secret: process.env.JWT_SECRET ?? "change-me" }),
+        ],
+        controllers: [dashboard_controller_1.DashboardController],
+        providers: [dashboard_service_1.DashboardService, prisma_service_1.PrismaService],
+    })
 ], DashboardModule);
 //# sourceMappingURL=dashboard.module.js.map

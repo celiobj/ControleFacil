@@ -16,6 +16,12 @@ let OperationsModule = class OperationsModule {
 };
 exports.OperationsModule = OperationsModule;
 exports.OperationsModule = OperationsModule = __decorate([
-    (0, common_1.Module)({ imports: [jwt_1.JwtModule.register({ secret: process.env.JWT_SECRET ?? 'change-me' })], controllers: [operations_controller_1.OperationsController], providers: [operations_service_1.OperationsService, prisma_service_1.PrismaService] })
+    (0, common_1.Module)({
+        imports: [
+            jwt_1.JwtModule.register({ secret: process.env.JWT_SECRET ?? "change-me" }),
+        ],
+        controllers: [operations_controller_1.OperationsController],
+        providers: [operations_service_1.OperationsService, prisma_service_1.PrismaService],
+    })
 ], OperationsModule);
 //# sourceMappingURL=operations.module.js.map

@@ -16,6 +16,12 @@ let UsersModule = class UsersModule {
 };
 exports.UsersModule = UsersModule;
 exports.UsersModule = UsersModule = __decorate([
-    (0, common_1.Module)({ imports: [jwt_1.JwtModule.register({ secret: process.env.JWT_SECRET ?? 'change-me' })], controllers: [users_controller_1.UsersController], providers: [users_service_1.UsersService, prisma_service_1.PrismaService] })
+    (0, common_1.Module)({
+        imports: [
+            jwt_1.JwtModule.register({ secret: process.env.JWT_SECRET ?? "change-me" }),
+        ],
+        controllers: [users_controller_1.UsersController],
+        providers: [users_service_1.UsersService, prisma_service_1.PrismaService],
+    })
 ], UsersModule);
 //# sourceMappingURL=users.module.js.map

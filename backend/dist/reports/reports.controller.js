@@ -25,35 +25,54 @@ let ReportsController = class ReportsController {
         this.prisma = prisma;
         this.dashboard = dashboard;
     }
-    profit() { return this.dashboard.summary(); }
-    expenses() { return this.prisma.expense.groupBy({ by: ['category'], _sum: { amount: true }, _count: { id: true } }); }
-    async csv(response) { const report = await this.dashboard.summary(); const lines = ['codigo;imovel;custo_total;venda;lucro_liquido;roi', ...report.operations.map((item) => `${item.code};${item.title};${item.costTotal.toFixed(2)};${item.sale.toFixed(2)};${item.netProfit.toFixed(2)};${item.roi.toFixed(2)}`)]; response.header('Content-Type', 'text/csv; charset=utf-8').attachment('relatorio-lucro.csv').send(lines.join('\n')); }
+    profit() {
+        return this.dashboard.summary();
+    }
+    expenses() {
+        return this.prisma.expense.groupBy({
+            by: ["category"],
+            _sum: { amount: true },
+            _count: { id: true },
+        });
+    }
+    async csv(response) {
+        const report = await this.dashboard.summary();
+        const lines = [
+            "codigo;imovel;custo_total;venda;lucro_liquido;roi",
+            ...report.operations.map((item) => `${item.code};${item.title};${item.costTotal.toFixed(2)};${item.sale.toFixed(2)};${item.netProfit.toFixed(2)};${item.roi.toFixed(2)}`),
+        ];
+        response
+            .header("Content-Type", "text/csv; charset=utf-8")
+            .attachment("relatorio-lucro.csv")
+            .send(lines.join("\n"));
+    }
 };
 exports.ReportsController = ReportsController;
 __decorate([
-    (0, common_1.Get)('profit'),
+    (0, common_1.Get)("profit"),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", void 0)
 ], ReportsController.prototype, "profit", null);
 __decorate([
-    (0, common_1.Get)('expenses'),
+    (0, common_1.Get)("expenses"),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", void 0)
 ], ReportsController.prototype, "expenses", null);
 __decorate([
-    (0, common_1.Get)('profit.csv'),
+    (0, common_1.Get)("profit.csv"),
     __param(0, (0, common_1.Res)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], ReportsController.prototype, "csv", null);
 exports.ReportsController = ReportsController = __decorate([
-    (0, swagger_1.ApiTags)('reports'),
+    (0, swagger_1.ApiTags)("reports"),
     (0, swagger_1.ApiBearerAuth)(),
     (0, common_1.UseGuards)(jwt_guard_1.JwtGuard),
-    (0, common_1.Controller)('reports'),
-    __metadata("design:paramtypes", [prisma_service_1.PrismaService, dashboard_service_1.DashboardService])
+    (0, common_1.Controller)("reports"),
+    __metadata("design:paramtypes", [prisma_service_1.PrismaService,
+    dashboard_service_1.DashboardService])
 ], ReportsController);
 //# sourceMappingURL=reports.controller.js.map

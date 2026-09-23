@@ -22,72 +22,88 @@ let OperationsController = class OperationsController {
     constructor(service) {
         this.service = service;
     }
-    expenses(propertyId) { return this.service.listExpenses(propertyId); }
-    expense(body) { return this.service.createExpense(body); }
-    renovations(propertyId) { return this.service.listRenovations(propertyId); }
-    renovation(body) { return this.service.createRenovation(body); }
-    auctions() { return this.service.listAuctions(); }
-    auction(body) { return this.service.createAuction(body); }
-    sales() { return this.service.listSales(); }
-    sale(body) { return this.service.createSale(body); }
+    expenses(propertyId) {
+        return this.service.listExpenses(propertyId);
+    }
+    expense(body) {
+        return this.service.createExpense(body);
+    }
+    renovations(propertyId) {
+        return this.service.listRenovations(propertyId);
+    }
+    renovation(body) {
+        return this.service.createRenovation(body);
+    }
+    auctions() {
+        return this.service.listAuctions();
+    }
+    auction(body) {
+        return this.service.createAuction(body);
+    }
+    sales() {
+        return this.service.listSales();
+    }
+    sale(body) {
+        return this.service.createSale(body);
+    }
 };
 exports.OperationsController = OperationsController;
 __decorate([
-    (0, common_1.Get)('expenses'),
-    __param(0, (0, common_1.Query)('propertyId')),
+    (0, common_1.Get)("expenses"),
+    __param(0, (0, common_1.Query)("propertyId")),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", void 0)
 ], OperationsController.prototype, "expenses", null);
 __decorate([
-    (0, common_1.Post)('expenses'),
+    (0, common_1.Post)("expenses"),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", void 0)
 ], OperationsController.prototype, "expense", null);
 __decorate([
-    (0, common_1.Get)('renovations'),
-    __param(0, (0, common_1.Query)('propertyId')),
+    (0, common_1.Get)("renovations"),
+    __param(0, (0, common_1.Query)("propertyId")),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", void 0)
 ], OperationsController.prototype, "renovations", null);
 __decorate([
-    (0, common_1.Post)('renovations'),
+    (0, common_1.Post)("renovations"),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", void 0)
 ], OperationsController.prototype, "renovation", null);
 __decorate([
-    (0, common_1.Get)('auctions'),
+    (0, common_1.Get)("auctions"),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", void 0)
 ], OperationsController.prototype, "auctions", null);
 __decorate([
-    (0, common_1.Post)('auctions'),
+    (0, common_1.Post)("auctions"),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", void 0)
 ], OperationsController.prototype, "auction", null);
 __decorate([
-    (0, common_1.Get)('sales'),
+    (0, common_1.Get)("sales"),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", void 0)
 ], OperationsController.prototype, "sales", null);
 __decorate([
-    (0, common_1.Post)('sales'),
+    (0, common_1.Post)("sales"),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", void 0)
 ], OperationsController.prototype, "sale", null);
 exports.OperationsController = OperationsController = __decorate([
-    (0, swagger_1.ApiTags)('operations'),
+    (0, swagger_1.ApiTags)("operations"),
     (0, swagger_1.ApiBearerAuth)(),
     (0, common_1.UseGuards)(jwt_guard_1.JwtGuard),
     (0, common_1.Controller)(),

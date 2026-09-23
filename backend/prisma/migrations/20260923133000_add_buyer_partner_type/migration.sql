@@ -1,0 +1,1 @@
+ALTER TYPE "PartnerType" ADD VALUE 'COMPRADOR';

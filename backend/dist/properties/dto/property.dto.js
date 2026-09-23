@@ -11,8 +11,16 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PropertyDto = void 0;
 const swagger_1 = require("@nestjs/swagger");
+const class_transformer_1 = require("class-transformer");
 const class_validator_1 = require("class-validator");
 const client_1 = require("@prisma/client");
+const decimalInput = ({ value }) => {
+    if (value === "" || value === null || value === undefined)
+        return undefined;
+    if (typeof value === "string")
+        return Number(value.replace(",", "."));
+    return value;
+};
 class PropertyDto {
     code;
     title;
@@ -79,11 +87,13 @@ __decorate([
 ], PropertyDto.prototype, "zipCode", void 0);
 __decorate([
     (0, class_validator_1.IsOptional)(),
+    (0, class_transformer_1.Transform)(decimalInput),
     (0, class_validator_1.IsNumber)(),
     __metadata("design:type", Number)
 ], PropertyDto.prototype, "totalArea", void 0);
 __decorate([
     (0, class_validator_1.IsOptional)(),
+    (0, class_transformer_1.Transform)(decimalInput),
     (0, class_validator_1.IsNumber)(),
     __metadata("design:type", Number)
 ], PropertyDto.prototype, "builtArea", void 0);

@@ -1,2 +1,1 @@
-export declare class PropertiesModule {
-}
+export declare class PropertiesModule {}

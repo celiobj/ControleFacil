@@ -1,0 +1,1 @@
+ALTER TABLE "auctions" ADD COLUMN "broker" TEXT;

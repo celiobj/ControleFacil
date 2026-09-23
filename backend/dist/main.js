@@ -8,8 +8,13 @@ async function bootstrap() {
     const app = await core_1.NestFactory.create(app_module_1.AppModule);
     app.enableCors();
     app.useGlobalPipes(new common_1.ValidationPipe({ whitelist: true, transform: true }));
-    const config = new swagger_1.DocumentBuilder().setTitle('Controle Fácil API').setDescription('Gestão de operações imobiliárias de leilão').setVersion('1.0').addBearerAuth().build();
-    swagger_1.SwaggerModule.setup('docs', app, swagger_1.SwaggerModule.createDocument(app, config));
+    const config = new swagger_1.DocumentBuilder()
+        .setTitle("Controle Fácil API")
+        .setDescription("Gestão de operações imobiliárias de leilão")
+        .setVersion("1.0")
+        .addBearerAuth()
+        .build();
+    swagger_1.SwaggerModule.setup("docs", app, swagger_1.SwaggerModule.createDocument(app, config));
     await app.listen(process.env.PORT ?? 3000);
 }
 bootstrap();

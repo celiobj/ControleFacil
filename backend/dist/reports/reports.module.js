@@ -16,6 +16,12 @@ let ReportsModule = class ReportsModule {
 };
 exports.ReportsModule = ReportsModule;
 exports.ReportsModule = ReportsModule = __decorate([
-    (0, common_1.Module)({ imports: [jwt_1.JwtModule.register({ secret: process.env.JWT_SECRET ?? 'change-me' })], controllers: [reports_controller_1.ReportsController], providers: [prisma_service_1.PrismaService, dashboard_service_1.DashboardService] })
+    (0, common_1.Module)({
+        imports: [
+            jwt_1.JwtModule.register({ secret: process.env.JWT_SECRET ?? "change-me" }),
+        ],
+        controllers: [reports_controller_1.ReportsController],
+        providers: [prisma_service_1.PrismaService, dashboard_service_1.DashboardService],
+    })
 ], ReportsModule);
 //# sourceMappingURL=reports.module.js.map

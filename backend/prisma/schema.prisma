@@ -54,6 +54,12 @@ enum ChecklistItemStatus {
   CONCLUIDO
   NAO_APLICAVEL
 }
+enum PartnerType {
+  LEILOEIRO
+  CORRETOR
+  EMPREITEIRA
+  COMPRADOR
+}
 
 model User {
   id           String   @id @default(uuid())
@@ -65,6 +71,22 @@ model User {
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
   @@map("users")
+}
+
+model Partner {
+  id        String      @id @default(uuid())
+  type      PartnerType
+  name      String
+  document  String?     @unique @db.VarChar(18)
+  email     String?
+  phone     String?     @db.VarChar(30)
+  company   String?     @db.VarChar(120)
+  notes     String?
+  createdAt DateTime    @default(now()) @map("created_at")
+  updatedAt DateTime    @updatedAt @map("updated_at")
+
+  @@index([type, name])
+  @@map("partners")
 }
 
 model Property {
@@ -130,6 +152,7 @@ model Auction {
   id                String   @id @default(uuid())
   propertyId        String   @unique @map("property_id")
   auctioneer        String
+  broker            String?
   portal            String?
   processNumber     String?  @map("process_number")
   appraisalValue    Decimal? @map("appraisal_value") @db.Decimal(14,2)
@@ -150,6 +173,7 @@ model Expense {
   amount      Decimal         @db.Decimal(14,2)
   date        DateTime
   receiptPath String?         @map("receipt_path")
+  contractor  String?
   notes       String?
   property    Property        @relation(fields: [propertyId], references: [id], onDelete: Cascade)
   @@index([propertyId, category, date])

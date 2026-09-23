@@ -20,14 +20,61 @@ let OperationsService = class OperationsService {
     constructor(prisma) {
         this.prisma = prisma;
     }
-    listExpenses(propertyId) { return this.prisma.expense.findMany({ where: { propertyId }, orderBy: { date: 'desc' }, include: { property: { select: { code: true, title: true } } } }); }
-    createExpense(data) { return this.prisma.expense.create({ data: { ...data, date: new Date(data.date) } }); }
-    listRenovations(propertyId) { return this.prisma.renovation.findMany({ where: { propertyId }, orderBy: { startDate: 'desc' } }); }
-    createRenovation(data) { return this.prisma.renovation.create({ data: { ...data, startDate: data.startDate ? new Date(data.startDate) : undefined, endDate: data.endDate ? new Date(data.endDate) : undefined } }); }
-    listAuctions() { return this.prisma.auction.findMany({ include: { property: true }, orderBy: { auctionDate: 'desc' } }); }
-    createAuction(data) { return this.prisma.auction.create({ data: { ...data, auctionDate: new Date(data.auctionDate), acquisitionDate: data.acquisitionDate ? new Date(data.acquisitionDate) : undefined } }); }
-    listSales() { return this.prisma.sale.findMany({ include: { property: true }, orderBy: { saleDate: 'desc' } }); }
-    createSale(data) { return this.prisma.sale.create({ data: { ...data, saleDate: new Date(data.saleDate) } }); }
+    listExpenses(propertyId) {
+        return this.prisma.expense.findMany({
+            where: { propertyId },
+            orderBy: { date: "desc" },
+            include: { property: { select: { code: true, title: true } } },
+        });
+    }
+    createExpense(data) {
+        return this.prisma.expense.create({
+            data: { ...data, date: new Date(data.date) },
+        });
+    }
+    listRenovations(propertyId) {
+        return this.prisma.renovation.findMany({
+            where: { propertyId },
+            orderBy: { startDate: "desc" },
+        });
+    }
+    createRenovation(data) {
+        return this.prisma.renovation.create({
+            data: {
+                ...data,
+                startDate: data.startDate ? new Date(data.startDate) : undefined,
+                endDate: data.endDate ? new Date(data.endDate) : undefined,
+            },
+        });
+    }
+    listAuctions() {
+        return this.prisma.auction.findMany({
+            include: { property: true },
+            orderBy: { auctionDate: "desc" },
+        });
+    }
+    createAuction(data) {
+        return this.prisma.auction.create({
+            data: {
+                ...data,
+                auctionDate: new Date(data.auctionDate),
+                acquisitionDate: data.acquisitionDate
+                    ? new Date(data.acquisitionDate)
+                    : undefined,
+            },
+        });
+    }
+    listSales() {
+        return this.prisma.sale.findMany({
+            include: { property: true },
+            orderBy: { saleDate: "desc" },
+        });
+    }
+    createSale(data) {
+        return this.prisma.sale.create({
+            data: { ...data, saleDate: new Date(data.saleDate) },
+        });
+    }
 };
 exports.OperationsService = OperationsService;
 exports.OperationsService = OperationsService = __decorate([
