@@ -73,6 +73,6 @@ exports.ReportsController = ReportsController = __decorate([
     (0, common_1.UseGuards)(jwt_guard_1.JwtGuard),
     (0, common_1.Controller)("reports"),
     __metadata("design:paramtypes", [prisma_service_1.PrismaService,
-    dashboard_service_1.DashboardService])
+        dashboard_service_1.DashboardService])
 ], ReportsController);
 //# sourceMappingURL=reports.controller.js.map

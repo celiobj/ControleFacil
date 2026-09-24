@@ -26,7 +26,10 @@ exports.AppModule = AppModule;
 exports.AppModule = AppModule = __decorate([
     (0, common_1.Module)({
         imports: [
-            config_1.ConfigModule.forRoot({ isGlobal: true }),
+            config_1.ConfigModule.forRoot({
+                isGlobal: true,
+                envFilePath: (0, node_path_1.join)(__dirname, "..", process.env.APP_ENV === "hml" ? ".env.hml" : ".env.prd"),
+            }),
             serve_static_1.ServeStaticModule.forRoot({ rootPath: (0, node_path_1.join)(__dirname, "..", "public") }),
             auth_module_1.AuthModule,
             properties_module_1.PropertiesModule,

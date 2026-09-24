@@ -35,6 +35,27 @@ Frontend: http://localhost:5173
 API: http://localhost:3000  
 Swagger: http://localhost:3000/docs
 
+## Ambientes locais
+
+Há dois ambientes locais independentes para testar alterações sem modificar os dados de produção:
+
+- PRD: banco `controle_facil`, API em `http://localhost:3000`
+- HML: banco `controle_facil_hml`, API em `http://localhost:3001`
+
+Inicialize o banco HML uma vez:
+
+```powershell
+.\scripts\setup-hml.cmd
+```
+
+Depois do build, inicie os dois ambientes:
+
+```powershell
+.\scripts\start-local-environments.cmd
+```
+
+Abra `http://localhost:4173` e escolha `Homologação` ou `Produção local` no login. Os tokens e os dados permanecem separados por ambiente. Para iniciar somente um ambiente, use `scripts\start-hml.cmd` ou `scripts\start-prd.cmd`.
+
 Para subir os dois processos pelo diretório raiz: `npm install`, `npm run install:all` e `npm run dev`.
 
 ## Build e inicialização com o Windows

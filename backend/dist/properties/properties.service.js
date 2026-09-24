@@ -141,6 +141,6 @@ exports.PropertiesService = PropertiesService = __decorate([
     __param(0, (0, common_1.Inject)(prisma_service_1.PrismaService)),
     __param(1, (0, common_1.Inject)(checklists_service_1.ChecklistsService)),
     __metadata("design:paramtypes", [prisma_service_1.PrismaService,
-    checklists_service_1.ChecklistsService])
+        checklists_service_1.ChecklistsService])
 ], PropertiesService);
 //# sourceMappingURL=properties.service.js.map

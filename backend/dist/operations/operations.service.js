@@ -54,14 +54,25 @@ let OperationsService = class OperationsService {
         });
     }
     createAuction(data) {
-        return this.prisma.auction.create({
-            data: {
-                ...data,
-                auctionDate: new Date(data.auctionDate),
-                acquisitionDate: data.acquisitionDate
-                    ? new Date(data.acquisitionDate)
-                    : undefined,
-            },
+        const { propertyId, ...auctionData } = data;
+        const normalizedData = {
+            ...auctionData,
+            auctionDate: new Date(data.auctionDate),
+            acquisitionDate: data.acquisitionDate
+                ? new Date(data.acquisitionDate)
+                : undefined,
+        };
+        return this.prisma.$transaction(async (transaction) => {
+            const auction = await transaction.auction.upsert({
+                where: { propertyId },
+                create: { propertyId, ...normalizedData },
+                update: normalizedData,
+            });
+            await transaction.property.update({
+                where: { id: propertyId },
+                data: { status: "ARREMATADO" },
+            });
+            return auction;
         });
     }
     listSales() {
@@ -71,8 +82,22 @@ let OperationsService = class OperationsService {
         });
     }
     createSale(data) {
-        return this.prisma.sale.create({
-            data: { ...data, saleDate: new Date(data.saleDate) },
+        const { propertyId, ...saleData } = data;
+        const normalizedData = {
+            ...saleData,
+            saleDate: new Date(data.saleDate),
+        };
+        return this.prisma.$transaction(async (transaction) => {
+            const sale = await transaction.sale.upsert({
+                where: { propertyId },
+                create: { propertyId, ...normalizedData },
+                update: normalizedData,
+            });
+            await transaction.property.update({
+                where: { id: propertyId },
+                data: { status: "VENDIDO" },
+            });
+            return sale;
         });
     }
 };

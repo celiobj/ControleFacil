@@ -14,7 +14,14 @@ import { PartnersModule } from "./partners/partners.module";
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: join(
+        __dirname,
+        "..",
+        process.env.APP_ENV === "hml" ? ".env.hml" : ".env.prd",
+      ),
+    }),
     ServeStaticModule.forRoot({ rootPath: join(__dirname, "..", "public") }),
     AuthModule,
     PropertiesModule,

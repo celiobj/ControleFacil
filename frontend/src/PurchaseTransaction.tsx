@@ -44,7 +44,7 @@ export default function PurchaseTransaction() {
     queryFn: async () => (await api.get("/partners?type=CORRETOR")).data,
   });
   const properties: Property[] = (propertiesData?.data ?? []).filter(
-    (property: Property) => property.status !== "CANCELADO",
+    (property: Property) => property.status === "EM_ANALISE",
   );
   const mutation = useMutation({
     mutationFn: () =>
@@ -55,11 +55,15 @@ export default function PurchaseTransaction() {
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["dashboard"] });
+      queryClient.invalidateQueries({ queryKey: ["property", purchase.propertyId] });
       setPurchase(initialPurchase);
       setPropertySearch("");
       setFeedback("Compra registrada com sucesso.");
     },
-    onError: () => setFeedback("Não foi possível registrar a compra."),
+    onError: (error: any) =>
+      setFeedback(
+        error.response?.data?.message ?? "Não foi possível registrar a compra.",
+      ),
   });
   const update = (field: keyof PurchaseForm, value: string) =>
     setPurchase((current) => ({ ...current, [field]: value }));
