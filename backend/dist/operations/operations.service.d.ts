@@ -14,8 +14,8 @@ export declare class OperationsService {
         notes: string | null;
         propertyId: string;
         category: import(".prisma/client").$Enums.ExpenseCategory;
-        amount: import("@prisma/client/runtime/library").Decimal;
         date: Date;
+        amount: import("@prisma/client/runtime/library").Decimal;
         receiptPath: string | null;
         contractor: string | null;
     })[]>;
@@ -34,8 +34,8 @@ export declare class OperationsService {
         notes: string | null;
         propertyId: string;
         category: import(".prisma/client").$Enums.ExpenseCategory;
-        amount: import("@prisma/client/runtime/library").Decimal;
         date: Date;
+        amount: import("@prisma/client/runtime/library").Decimal;
         receiptPath: string | null;
         contractor: string | null;
     }, never, import("@prisma/client/runtime/library").DefaultArgs, import(".prisma/client").Prisma.PrismaClientOptions>;
@@ -70,6 +70,8 @@ export declare class OperationsService {
             code: string;
             title: string;
             type: import(".prisma/client").$Enums.PropertyType;
+            negotiationType: import(".prisma/client").$Enums.PropertyNegotiationType | null;
+            negotiationDeadline: Date | null;
             address: string;
             complement: string | null;
             neighborhood: string;
@@ -120,6 +122,8 @@ export declare class OperationsService {
             code: string;
             title: string;
             type: import(".prisma/client").$Enums.PropertyType;
+            negotiationType: import(".prisma/client").$Enums.PropertyNegotiationType | null;
+            negotiationDeadline: Date | null;
             address: string;
             complement: string | null;
             neighborhood: string;

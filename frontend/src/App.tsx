@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, Navigate, NavLink, Route, Routes, useNavigate, useParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { api, environmentConfig, getEnvironment, getTokenKey, setEnvironment, Property, AppEnvironment } from './api';
+import { api, environmentConfig, getEnvironment, getTokenKey, setEnvironment, Property, CaixaPropertyImport, AppEnvironment } from './api';
 import ChecklistPage from './ChecklistPage';
 import SimulationPage from './SimulationPage';
 import PartnersPage from './PartnersPage';
@@ -10,32 +10,565 @@ import SaleTransaction from './SaleTransaction';
 import ExpensesPage from './ExpensesPage';
 import PropertyDetailPage from './PropertyDetailPage';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import PersonAddAlt1OutlinedIcon from '@mui/icons-material/PersonAddAlt1Outlined';
+import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined';
+import CloseOutlinedIcon from '@mui/icons-material/CloseOutlined';
 
 const menu = [['/','Visão Geral'],['/properties','Imóveis'],['/partners','Cadastros']];
 const brl = (value: number) => value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-function Login({ onLogin }: { onLogin: () => void }) { const [email, setEmail] = useState('admin@admin.com'); const [password, setPassword] = useState('Admin@123'); const [environment, setSelectedEnvironment] = useState<AppEnvironment>(getEnvironment()); const [error, setError] = useState(''); const submit = async (event: React.FormEvent) => { event.preventDefault(); setError(''); setEnvironment(environment); try { const response = await api.post('/auth/login', { email, password }); localStorage.setItem(getTokenKey(environment), response.data.accessToken); onLogin(); } catch { setError(`Não foi possível entrar na ${environmentConfig[environment].label}.`); } }; return <main className="login"><div className="login-panel"><div className="brand-mark">CF</div><p className="eyebrow">GESTÃO DE OPERAÇÕES</p><h1>Controle Fácil</h1><p className="muted">Do arremate ao resultado, uma visão clara do seu patrimônio.</p><form onSubmit={submit}><label>Ambiente<select value={environment} onChange={e => setSelectedEnvironment(e.target.value as AppEnvironment)}><option value="hml">Homologação</option><option value="prd">Produção local</option></select></label><label>E-mail<input value={email} onChange={e => setEmail(e.target.value)} type="email" /></label><label>Senha<input value={password} onChange={e => setPassword(e.target.value)} type="password" /></label>{error && <p className="error">{error}</p>}<button className="primary">Entrar no sistema</button></form></div></main>; }
-function Shell({ children }: { children: React.ReactNode }) { const navigate = useNavigate(); const environment = getEnvironment(); return <div className="shell"><aside><div className="brand"><span>CF</span><strong>controle fácil</strong></div><p className="workspace">PAINEL OPERACIONAL</p><div className={`environment-badge environment-${environment}`}>{environmentConfig[environment].label}</div><nav>{menu.map(([to, label]) => <NavLink key={to} to={to} end={to === '/'}>{label}</NavLink>)}<div className="operations-submenu"><span>Operações</span><div className="operations-children"><NavLink to="/operations/purchases">Compra</NavLink><NavLink to="/operations/expenses">Despesas</NavLink><NavLink to="/operations/sales">Venda</NavLink><NavLink to="/operations/simulation">Simulação</NavLink></div></div><NavLink to="/reports">Relatórios</NavLink></nav><button className="logout" onClick={() => { localStorage.removeItem(getTokenKey()); navigate('/login'); }}>Sair</button></aside><section className="content"><header><div><span className="eyebrow">PORTFÓLIO IMOBILIÁRIO</span><h2>Bom dia, administrador</h2></div><div className="avatar">AD</div></header>{children}</section></div>; }
-function Dashboard() { const { data, isLoading } = useQuery({ queryKey: ['dashboard'], queryFn: async () => (await api.get('/dashboard')).data }); if (isLoading) return <p>Carregando painel...</p>; const cards = [['Total investido', data?.totalInvested ?? 0], ['Total vendido', data?.totalSold ?? 0], ['Lucro acumulado', data?.accumulatedProfit ?? 0]]; const chart = data?.operations?.map((item: any) => ({ name: item.code, lucro: item.netProfit })) ?? []; return <><div className="section-heading"><div><p className="eyebrow">RESUMO EXECUTIVO</p><h1>Visão geral</h1></div><span className="date-chip">Atualizado agora</span></div><div className="cards">{cards.map(([label, value]) => <article className="metric" key={label as string}><span>{label}</span><strong>{brl(value as number)}</strong></article>)}<article className="metric accent"><span>ROI médio</span><strong>{(data?.averageRoi ?? 0).toFixed(1)}%</strong></article></div><div className="grid"><article className="panel chart-panel"><div className="panel-title"><h3>Resultado por operação</h3><span>Lucro líquido</span></div><ResponsiveContainer width="100%" height={260}><BarChart data={chart}><XAxis dataKey="name"/><YAxis/><Tooltip formatter={(v) => brl(Number(v))}/><Bar dataKey="lucro" fill="#e36b3d" radius={[4,4,0,0]}/></BarChart></ResponsiveContainer></article><article className="panel"><div className="panel-title"><h3>Status do portfólio</h3><span>{data?.propertyCount ?? 0} imóveis</span></div>{Object.entries(data?.byStatus ?? {}).map(([key, value]) => <div className="status-row" key={key}><span>{key.replaceAll('_',' ')}</span><strong>{value as number}</strong></div>)}</article></div></>; }
-const emptyProperty = { title: '', type: 'APARTAMENTO', address: '', number: '', complement: '', neighborhood: '', city: '', state: '', zipCode: '', totalArea: '', builtArea: '', registryNumber: '', description: '', status: 'EM_ANALISE', notes: '' };
-function Properties() {
-	const queryClient = useQueryClient();
+const date = (value?: string | null) => value ? new Date(value).toISOString().slice(0, 10).split('-').reverse().join('/') : '-';
+function Login({ onLogin }: { onLogin: () => void }) {
+	const [email, setEmail] = useState('admin@admin.com');
+	const [password, setPassword] = useState('Admin@123');
+	const [environment, setSelectedEnvironment] = useState<AppEnvironment>(getEnvironment());
+	const [error, setError] = useState('');
+	const submit = async (event: React.FormEvent) => {
+		event.preventDefault();
+		setError('');
+		setEnvironment(environment);
+		try {
+			const response = await api.post('/auth/login', { email, password });
+			localStorage.setItem(getTokenKey(environment), response.data.accessToken);
+			onLogin();
+		} catch {
+			setError(`Não foi possível entrar na ${environmentConfig[environment].label}.`);
+		}
+	};
+	return <main className="login"><div className="login-panel"><div className="brand-mark">CF</div><p className="eyebrow">GESTÃO DE OPERAÇÕES</p><h1>Controle Fácil</h1><p className="muted">Do arremate ao resultado, uma visão clara do seu patrimônio.</p><form onSubmit={submit}><label>Ambiente<select value={environment} onChange={e => setSelectedEnvironment(e.target.value as AppEnvironment)}><option value="hml">Homologação</option><option value="prd">Produção local</option></select></label><label>E-mail<input autoComplete="username" required value={email} onChange={e => setEmail(e.target.value)} type="email" /></label><label>Senha<input autoComplete="current-password" required value={password} onChange={e => setPassword(e.target.value)} type="password" /></label>{error && <p className="error">{error}</p>}<button className="primary">Entrar no sistema</button><p className="auth-switch">Ainda não tem acesso? <Link to="/register">Criar usuário</Link></p></form></div></main>;
+}
+function Register({ onLogin, authenticated = false }: { onLogin: () => void; authenticated?: boolean }) {
+	const [name, setName] = useState('');
+	const [email, setEmail] = useState('');
+	const [password, setPassword] = useState('');
+	const [confirmPassword, setConfirmPassword] = useState('');
+	const [environment, setSelectedEnvironment] = useState<AppEnvironment>(getEnvironment());
+	const [error, setError] = useState('');
+	const [success, setSuccess] = useState('');
+	const [isSubmitting, setIsSubmitting] = useState(false);
 	const navigate = useNavigate();
-	const { data, isLoading } = useQuery({ queryKey: ['properties'], queryFn: async () => (await api.get('/properties')).data });
-	const [form, setForm] = useState(emptyProperty);
-	const [search, setSearch] = useState('');
-	const [open, setOpen] = useState(false);
-	const [editingId, setEditingId] = useState<string | null>(null);
-	const [feedback, setFeedback] = useState('');
-	const properties: Property[] = data?.data ?? [];
-	const normalizedSearch = search.trim().toLocaleLowerCase();
-	const visibleProperties = properties.filter((item) => [item.code, item.title, item.city, item.neighborhood].some((value) => value?.toLocaleLowerCase().includes(normalizedSearch)));
-	const mutation = useMutation({ mutationFn: async () => { const parseArea = (value: string) => value ? Number(value.replace(',', '.')) : undefined; const payload = { ...form, totalArea: parseArea(form.totalArea), builtArea: parseArea(form.builtArea) }; return editingId ? api.patch(`/properties/${editingId}`, payload) : api.post('/properties', payload); }, onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['properties'] }); setForm(emptyProperty); setEditingId(null); setOpen(false); setFeedback(editingId ? 'Imóvel atualizado com sucesso.' : 'Imóvel cadastrado com sucesso.'); }, onError: () => setFeedback('Não foi possível salvar o imóvel. Verifique os dados e tente novamente.') });
-	const removeMutation = useMutation({ mutationFn: (id: string) => api.delete(`/properties/${id}`), onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['properties'] }); queryClient.invalidateQueries({ queryKey: ['dashboard'] }); setFeedback('Imóvel excluído do portfólio.'); }, onError: () => setFeedback('Não foi possível excluir o imóvel.') });
-	const update = (field: string, value: string) => setForm((current) => ({ ...current, [field]: value }));
-	const submit = (event: React.FormEvent) => { event.preventDefault(); setFeedback(''); mutation.mutate(); };
-	const edit = (item: Property & Record<string, any>) => { setForm({ ...emptyProperty, ...item, totalArea: item.totalArea ?? '', builtArea: item.builtArea ?? '' }); setEditingId(item.id); setOpen(true); setFeedback(''); };
-	const remove = (id: string) => { if (window.confirm('Excluir este imóvel do portfólio? Ele não aparecerá mais nos relatórios.')) removeMutation.mutate(id); };
-	return <><div className="section-heading"><div><p className="eyebrow">ATIVOS</p><h1>Imóveis</h1></div><button className="primary small" onClick={() => { setForm(emptyProperty); setEditingId(null); setOpen(true); setFeedback(''); }}>+ Novo imóvel</button></div>{feedback && <p className={feedback.includes('sucesso') || feedback.includes('excluído') ? 'success' : 'error'}>{feedback}</p>}{open && <form className="panel property-form" onSubmit={submit}><div className="panel-title"><h3>{editingId ? 'Editar imóvel' : 'Novo imóvel'}</h3><button type="button" className="close-button" onClick={() => setOpen(false)}>Fechar</button></div><div className="form-grid"><label>Título *<input required value={form.title} onChange={e => update('title', e.target.value)} /></label><label>Tipo *<select value={form.type} onChange={e => update('type', e.target.value)}><option>APARTAMENTO</option><option>CASA</option><option>TERRENO</option><option>COMERCIAL</option><option>RURAL</option><option>OUTRO</option></select></label><label>Status<select value={form.status} onChange={e => update('status', e.target.value)}><option>EM_ANALISE</option><option>ARREMATADO</option><option>REGULARIZACAO</option><option>REFORMA</option><option>PRONTO_PARA_VENDA</option><option>VENDIDO</option><option>CANCELADO</option></select></label><label className="wide">Endereço *<input required value={form.address} onChange={e => update('address', e.target.value)} /></label><label>Número<input value={form.number} onChange={e => update('number', e.target.value)} /></label><label>Complemento<input value={form.complement} onChange={e => update('complement', e.target.value)} /></label><label>Bairro *<input required value={form.neighborhood} onChange={e => update('neighborhood', e.target.value)} /></label><label>Cidade *<input required value={form.city} onChange={e => update('city', e.target.value)} /></label><label>Estado *<input required maxLength={2} value={form.state} onChange={e => update('state', e.target.value.toUpperCase())} /></label><label>CEP<input value={form.zipCode} onChange={e => update('zipCode', e.target.value)} /></label><label>Área total (m²)<input type="number" min="0" step="0.01" value={form.totalArea} onChange={e => update('totalArea', e.target.value)} /></label><label>Área construída (m²)<input type="number" min="0" step="0.01" value={form.builtArea} onChange={e => update('builtArea', e.target.value)} /></label><label>Matrícula<input value={form.registryNumber} onChange={e => update('registryNumber', e.target.value)} /></label><label className="wide">Descrição<textarea rows={3} value={form.description} onChange={e => update('description', e.target.value)} /></label><label className="wide">Observações<textarea rows={3} value={form.notes} onChange={e => update('notes', e.target.value)} /></label></div><div className="form-actions"><button type="button" className="secondary" onClick={() => setOpen(false)}>Cancelar</button><button className="primary" disabled={mutation.isPending}>{mutation.isPending ? 'Salvando...' : editingId ? 'Atualizar imóvel' : 'Salvar imóvel'}</button></div></form>}<div className="panel table-panel"><div className="property-search"><input type="search" placeholder="Buscar por código, imóvel, cidade ou bairro" value={search} onChange={e => setSearch(e.target.value)} /></div>{isLoading ? <p>Carregando imóveis...</p> : <table><thead><tr><th>Código</th><th>Imóvel</th><th>Localização</th><th>Tipo</th><th>Status</th><th>Ações</th></tr></thead><tbody>{visibleProperties.map(item => <tr key={item.id}><td className="code"><Link className="property-link" to={`/properties/${item.id}`}>{item.code}</Link></td><td><Link className="property-link" to={`/properties/${item.id}`}><strong>{item.title}</strong></Link></td><td>{item.neighborhood}, {item.city}</td><td>{item.type}</td><td><span className="tag">{item.status.replaceAll('_',' ')}</span></td><td><div className="row-actions"><button className="table-action" onClick={() => navigate(`/properties/${item.id}/checklist`)}>Checklist</button><button className="table-action" onClick={() => edit(item as Property & Record<string, any>)}>Editar</button><button className="table-action danger" onClick={() => remove(item.id)} disabled={removeMutation.isPending}>Excluir</button></div></td></tr>)}</tbody></table>}</div></>;
+	const submit = async (event: React.FormEvent) => {
+		event.preventDefault();
+		setError('');
+		if (password !== confirmPassword) {
+			setError('As senhas não coincidem.');
+			return;
+		}
+		setIsSubmitting(true);
+		if (!authenticated) setEnvironment(environment);
+		try {
+			await api.post('/auth/register', { name: name.trim(), email: email.trim(), password });
+			if (authenticated) {
+				setSuccess('Usuário criado com sucesso.');
+				setName('');
+				setEmail('');
+				setPassword('');
+				setConfirmPassword('');
+				return;
+			}
+			const response = await api.post('/auth/login', { email: email.trim(), password });
+			localStorage.setItem(getTokenKey(environment), response.data.accessToken);
+			onLogin();
+			navigate('/');
+		} catch (requestError: any) {
+			setError(requestError.response?.status === 409
+				? 'Este e-mail já está cadastrado.'
+				: `Não foi possível criar a conta na ${environmentConfig[environment].label}.`);
+		} finally {
+			setIsSubmitting(false);
+		}
+	};
+	return <main className={`auth-screen${authenticated ? ' embedded-auth-screen' : ''}`}><section className="auth-panel"><div className="auth-brand"><span>CF</span><p className="eyebrow">GESTÃO DE OPERAÇÕES</p></div><div className="auth-heading"><h1>{authenticated ? 'Criar usuário' : 'Novo acesso'}</h1><p>{authenticated ? 'Cadastre um novo acesso ao sistema.' : 'Crie seu usuário para acompanhar as operações.'}</p></div><form className="auth-form" onSubmit={submit}>{!authenticated && <label>Ambiente<select value={environment} onChange={event => setSelectedEnvironment(event.target.value as AppEnvironment)}><option value="hml">Homologação</option><option value="prd">Produção local</option></select></label>}<label>Nome completo<input autoComplete="name" required maxLength={120} value={name} onChange={event => setName(event.target.value)} /></label><label>E-mail<input autoComplete="email" required type="email" maxLength={254} value={email} onChange={event => setEmail(event.target.value)} /></label><label>Senha<input autoComplete="new-password" required minLength={8} type="password" value={password} onChange={event => setPassword(event.target.value)} /></label><label>Confirmar senha<input autoComplete="new-password" required minLength={8} type="password" value={confirmPassword} onChange={event => setConfirmPassword(event.target.value)} /></label>{error && <p className="auth-error" role="alert">{error}</p>}{success && <p className="auth-success" role="status">{success}</p>}<button className="primary" disabled={isSubmitting}>{isSubmitting ? 'Criando usuário...' : 'Criar usuário'}</button></form>{!authenticated && <p className="auth-switch">Já tem acesso? <Link to="/login">Entrar</Link></p>}</section></main>;
+}
+function Shell({ children }: { children: React.ReactNode }) {
+	const navigate = useNavigate();
+	const environment = getEnvironment();
+	const [userMenuOpen, setUserMenuOpen] = useState(false);
+	return <div className="shell"><aside><div className="brand"><span>CF</span><strong>controle fácil</strong></div><p className="workspace">PAINEL OPERACIONAL</p><div className={`environment-badge environment-${environment}`}>{environmentConfig[environment].label}</div><nav>{menu.map(([to, label]) => <NavLink key={to} to={to} end={to === '/'}>{label}</NavLink>)}<div className="operations-submenu"><span>Operações</span><div className="operations-children"><NavLink to="/operations/purchases">Compra</NavLink><NavLink to="/operations/expenses">Despesas</NavLink><NavLink to="/operations/sales">Venda</NavLink><NavLink to="/operations/simulation">Simulação</NavLink></div></div><NavLink to="/reports">Relatórios</NavLink></nav><button className="logout" onClick={() => { localStorage.removeItem(getTokenKey()); navigate('/login'); }}>Sair</button></aside><section className="content"><header><div><span className="eyebrow">PORTFÓLIO IMOBILIÁRIO</span><h2>Bom dia, administrador</h2></div><button className="avatar" type="button" aria-label="Abrir menu do usuário" aria-haspopup="dialog" aria-expanded={userMenuOpen} onClick={() => setUserMenuOpen(true)}>AD</button></header>{children}</section>{userMenuOpen && <><button className="user-menu-backdrop" aria-label="Fechar menu do usuário" onClick={() => setUserMenuOpen(false)} /><section className="user-drawer" role="dialog" aria-modal="true" aria-labelledby="user-drawer-title"><div className="user-drawer-header"><div><span className="eyebrow">CONTA</span><h2 id="user-drawer-title">Menu do usuário</h2></div><button className="user-drawer-close" type="button" aria-label="Fechar menu" onClick={() => setUserMenuOpen(false)}><CloseOutlinedIcon /></button></div><Link className="user-menu-link" to="/users/new" onClick={() => setUserMenuOpen(false)}><PersonAddAlt1OutlinedIcon fontSize="small" /><span>Criar usuário</span></Link></section></>}</div>;
+}
+function Dashboard() { const { data, isLoading } = useQuery({ queryKey: ['dashboard'], queryFn: async () => (await api.get('/dashboard')).data }); if (isLoading) return <p>Carregando painel...</p>; const cards = [['Total investido', data?.totalInvested ?? 0], ['Total vendido', data?.totalSold ?? 0], ['Lucro acumulado', data?.accumulatedProfit ?? 0]]; const chart = data?.operations?.map((item: any) => ({ name: item.code, lucro: item.netProfit })) ?? []; return <><div className="section-heading"><div><p className="eyebrow">RESUMO EXECUTIVO</p><h1>Visão geral</h1></div><span className="date-chip">Atualizado agora</span></div><div className="cards">{cards.map(([label, value]) => <article className="metric" key={label as string}><span>{label}</span><strong>{brl(value as number)}</strong></article>)}<article className="metric accent"><span>ROI médio</span><strong>{(data?.averageRoi ?? 0).toFixed(1)}%</strong></article></div><div className="grid"><article className="panel chart-panel"><div className="panel-title"><h3>Resultado por operação</h3><span>Lucro líquido</span></div><ResponsiveContainer width="100%" height={260}><BarChart data={chart}><XAxis dataKey="name"/><YAxis/><Tooltip formatter={(v) => brl(Number(v))}/><Bar dataKey="lucro" fill="#e36b3d" radius={[4,4,0,0]}/></BarChart></ResponsiveContainer></article><article className="panel"><div className="panel-title"><h3>Status do portfólio</h3><span>{data?.propertyCount ?? 0} imóveis</span></div>{Object.entries(data?.byStatus ?? {}).map(([key, value]) => <div className="status-row" key={key}><span>{key.replaceAll('_',' ')}</span><strong>{value as number}</strong></div>)}</article></div></>; }
+const emptyProperty = {
+  title: "",
+  type: "APARTAMENTO",
+  negotiationType: "",
+  negotiationDeadline: "",
+  address: "",
+  number: "",
+  complement: "",
+  neighborhood: "",
+  city: "",
+  state: "",
+  zipCode: "",
+  totalArea: "",
+  builtArea: "",
+  registryNumber: "",
+  description: "",
+  status: "EM_ANALISE",
+  notes: "",
+};
+function Properties() {
+  const queryClient = useQueryClient();
+  const navigate = useNavigate();
+  const { data, isLoading } = useQuery({
+    queryKey: ["properties"],
+    queryFn: async () => (await api.get("/properties")).data,
+  });
+  const [form, setForm] = useState(emptyProperty);
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
+  const [open, setOpen] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [feedback, setFeedback] = useState("");
+  const [caixaText, setCaixaText] = useState("");
+  const [isImporting, setIsImporting] = useState(false);
+  const properties: Property[] = data?.data ?? [];
+  const normalizedSearch = search.trim().toLocaleLowerCase();
+  const visibleProperties = properties.filter((item) =>
+    (!statusFilter || item.status === statusFilter) &&
+      [item.code, item.title, item.city, item.neighborhood].some((value) =>
+        value?.toLocaleLowerCase().includes(normalizedSearch),
+      ),
+  );
+  const mutation = useMutation({
+    mutationFn: async () => {
+      const parseArea = (value: string) =>
+        value ? Number(value.replace(",", ".")) : undefined;
+      const payload = {
+        ...form,
+        negotiationDeadline: form.negotiationDeadline || null,
+        totalArea: parseArea(form.totalArea),
+        builtArea: parseArea(form.builtArea),
+      };
+      return editingId
+        ? api.patch(`/properties/${editingId}`, payload)
+        : api.post("/properties", payload);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["properties"] });
+      setForm(emptyProperty);
+      setEditingId(null);
+      setCaixaText("");
+      setOpen(false);
+      setFeedback(
+        editingId
+          ? "Imóvel atualizado com sucesso."
+          : "Imóvel cadastrado com sucesso.",
+      );
+    },
+    onError: () =>
+      setFeedback(
+        "Não foi possível salvar o imóvel. Verifique os dados e tente novamente.",
+      ),
+  });
+  const removeMutation = useMutation({
+    mutationFn: (id: string) => api.delete(`/properties/${id}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["properties"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
+      setFeedback("Imóvel excluído do portfólio.");
+    },
+    onError: () => setFeedback("Não foi possível excluir o imóvel."),
+  });
+  const update = (field: string, value: string) =>
+    setForm((current) => ({ ...current, [field]: value }));
+  const submit = (event: React.FormEvent) => {
+    event.preventDefault();
+    setFeedback("");
+    mutation.mutate();
+  };
+  const importCaixaProperty = async () => {
+    const text = caixaText.trim();
+    if (!text) {
+      setFeedback("Cole o texto do anúncio da CAIXA.");
+      return;
+    }
+    setFeedback("");
+    setIsImporting(true);
+    try {
+      const response = await api.post<CaixaPropertyImport>(
+        "/properties/import/caixa/text",
+        { text },
+      );
+      setForm((current) => ({ ...current, ...response.data }));
+      setFeedback("Dados separados. Confira os campos antes de salvar.");
+    } catch (error: any) {
+      const message = error.response?.data?.message;
+      setFeedback(
+        typeof message === "string"
+          ? message
+          : "Não foi possível interpretar o texto. Confira o conteúdo e tente novamente.",
+      );
+    } finally {
+      setIsImporting(false);
+    }
+  };
+  const edit = (item: Property & Record<string, any>) => {
+    setForm({
+      ...emptyProperty,
+      ...item,
+      negotiationType: item.negotiationType ?? "",
+      negotiationDeadline: item.negotiationDeadline
+        ? new Date(item.negotiationDeadline).toISOString().slice(0, 10)
+        : "",
+      totalArea: item.totalArea ?? "",
+      builtArea: item.builtArea ?? "",
+    });
+    setEditingId(item.id);
+    setCaixaText("");
+    setOpen(true);
+    setFeedback("");
+  };
+  const remove = (id: string) => {
+    if (
+      window.confirm(
+        "Excluir este imóvel do portfólio? Ele não aparecerá mais nos relatórios.",
+      )
+    )
+      removeMutation.mutate(id);
+  };
+  return (
+    <>
+      <div className="section-heading">
+        <div>
+          <p className="eyebrow">ATIVOS</p>
+          <h1>Imóveis</h1>
+        </div>
+        <button
+          className="primary small"
+          onClick={() => {
+            setForm(emptyProperty);
+            setEditingId(null);
+            setCaixaText("");
+            setOpen(true);
+            setFeedback("");
+          }}
+        >
+          + Novo imóvel
+        </button>
+      </div>
+      {feedback && (
+        <p
+          className={
+            feedback.includes("sucesso") ||
+            feedback.includes("excluído") ||
+            feedback.includes("separados")
+              ? "success"
+              : "error"
+          }
+        >
+          {feedback}
+        </p>
+      )}
+      {open && (
+        <form className="panel property-form" onSubmit={submit}>
+          <div className="panel-title">
+            <h3>{editingId ? "Editar imóvel" : "Novo imóvel"}</h3>
+            <button
+              type="button"
+              className="close-button"
+              onClick={() => setOpen(false)}
+            >
+              Fechar
+            </button>
+          </div>
+          <div className="import-row">
+            <label>
+              Texto do anúncio CAIXA
+              <textarea
+                rows={5}
+                placeholder="Cole aqui o texto completo copiado do anúncio."
+                value={caixaText}
+                onChange={(event) => setCaixaText(event.target.value)}
+              />
+            </label>
+            <button
+              type="button"
+              className="secondary import-button"
+              disabled={isImporting || !caixaText.trim()}
+              onClick={() => void importCaixaProperty()}
+            >
+              <FileDownloadOutlinedIcon fontSize="small" />
+              {isImporting ? "Interpretando..." : "Preencher formulário"}
+            </button>
+          </div>
+          <div className="form-grid">
+            <label>
+              Título *
+              <input
+                required
+                value={form.title}
+                onChange={(e) => update("title", e.target.value)}
+              />
+            </label>
+            <label>
+              Tipo *
+              <select
+                value={form.type}
+                onChange={(e) => update("type", e.target.value)}
+              >
+                <option>APARTAMENTO</option>
+                <option>CASA</option>
+                <option>TERRENO</option>
+                <option>COMERCIAL</option>
+                <option>RURAL</option>
+                <option>OUTRO</option>
+              </select>
+            </label>
+            <label>
+              Status
+              <select
+                value={form.status}
+                onChange={(e) => update("status", e.target.value)}
+              >
+                <option>EM_ANALISE</option>
+                <option>ARREMATADO</option>
+                <option>REGULARIZACAO</option>
+                <option>REFORMA</option>
+                <option>PRONTO_PARA_VENDA</option>
+                <option>VENDIDO</option>
+                <option>CANCELADO</option>
+              </select>
+            </label>
+            <label>
+              Tipo de negociação *
+              <select
+                required
+                value={form.negotiationType}
+                onChange={(e) => update("negotiationType", e.target.value)}
+              >
+                <option value="">Selecione</option>
+                <option value="LEILAO_SFI">Leilão SFI</option>
+                <option value="EXERCICIO_DIREITO_PREFERENCIA">
+                  Exercício de direito de preferência
+                </option>
+                <option value="LICITACAO_ABERTA">Licitação aberta</option>
+                <option value="VENDA_ONLINE">Venda Online</option>
+                <option value="COMPRA_DIRETA">Compra direta</option>
+              </select>
+            </label>
+            <label>
+              Data limite para negociação
+              <input
+                type="date"
+                value={form.negotiationDeadline}
+                onChange={(e) => update("negotiationDeadline", e.target.value)}
+              />
+            </label>
+            <label className="wide">
+              Endereço *
+              <input
+                required
+                value={form.address}
+                onChange={(e) => update("address", e.target.value)}
+              />
+            </label>
+            <label>
+              Número
+              <input
+                value={form.number}
+                onChange={(e) => update("number", e.target.value)}
+              />
+            </label>
+            <label>
+              Complemento
+              <input
+                value={form.complement}
+                onChange={(e) => update("complement", e.target.value)}
+              />
+            </label>
+            <label>
+              Bairro *
+              <input
+                required
+                value={form.neighborhood}
+                onChange={(e) => update("neighborhood", e.target.value)}
+              />
+            </label>
+            <label>
+              Cidade *
+              <input
+                required
+                value={form.city}
+                onChange={(e) => update("city", e.target.value)}
+              />
+            </label>
+            <label>
+              Estado *
+              <input
+                required
+                maxLength={2}
+                value={form.state}
+                onChange={(e) => update("state", e.target.value.toUpperCase())}
+              />
+            </label>
+            <label>
+              CEP
+              <input
+                value={form.zipCode}
+                onChange={(e) => update("zipCode", e.target.value)}
+              />
+            </label>
+            <label>
+              Área total (m²)
+              <input
+                type="number"
+                min="0"
+                step="0.01"
+                value={form.totalArea}
+                onChange={(e) => update("totalArea", e.target.value)}
+              />
+            </label>
+            <label>
+              Área construída (m²)
+              <input
+                type="number"
+                min="0"
+                step="0.01"
+                value={form.builtArea}
+                onChange={(e) => update("builtArea", e.target.value)}
+              />
+            </label>
+            <label>
+              Matrícula
+              <input
+                value={form.registryNumber}
+                onChange={(e) => update("registryNumber", e.target.value)}
+              />
+            </label>
+            <label className="wide">
+              Descrição
+              <textarea
+                rows={3}
+                value={form.description}
+                onChange={(e) => update("description", e.target.value)}
+              />
+            </label>
+            <label className="wide">
+              Observações
+              <textarea
+                rows={3}
+                value={form.notes}
+                onChange={(e) => update("notes", e.target.value)}
+              />
+            </label>
+          </div>
+          <div className="form-actions">
+            <button
+              type="button"
+              className="secondary"
+              onClick={() => setOpen(false)}
+            >
+              Cancelar
+            </button>
+            <button className="primary" disabled={mutation.isPending}>
+              {mutation.isPending
+                ? "Salvando..."
+                : editingId
+                  ? "Atualizar imóvel"
+                  : "Salvar imóvel"}
+            </button>
+          </div>
+        </form>
+      )}
+      <div className="panel table-panel">
+        <div className="property-search">
+          <input
+            type="search"
+            placeholder="Buscar por código, imóvel, cidade ou bairro"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+          <select
+            aria-label="Filtrar imóveis por status"
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+          >
+            <option value="">Todos os status</option>
+            <option value="EM_ANALISE">Em análise</option>
+            <option value="ARREMATADO">Arrematado</option>
+            <option value="REGULARIZACAO">Regularização</option>
+            <option value="REFORMA">Reforma</option>
+            <option value="PRONTO_PARA_VENDA">Pronto para venda</option>
+            <option value="VENDIDO">Vendido</option>
+            <option value="CANCELADO">Cancelado</option>
+          </select>
+        </div>
+        {isLoading ? (
+          <p>Carregando imóveis...</p>
+        ) : (
+          <table>
+            <thead>
+              <tr>
+                <th>Código</th>
+                <th>Imóvel</th>
+                <th>Localização</th>
+                <th>Tipo</th>
+                <th>Status</th>
+                <th>Data limite</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              {visibleProperties.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="empty-state">
+                    Nenhum imóvel encontrado.
+                  </td>
+                </tr>
+              ) : visibleProperties.map((item) => (
+                <tr key={item.id}>
+                  <td className="code">
+                    <Link
+                      className="property-link"
+                      to={`/properties/${item.id}`}
+                    >
+                      {item.code}
+                    </Link>
+                  </td>
+                  <td>
+                    <Link
+                      className="property-link"
+                      to={`/properties/${item.id}`}
+                    >
+                      <strong>{item.title}</strong>
+                    </Link>
+                  </td>
+                  <td>
+                    {item.neighborhood}, {item.city}
+                  </td>
+                  <td>{item.type}</td>
+                  <td>
+                    <span className="tag">
+                      {item.status.replaceAll("_", " ")}
+                    </span>
+                  </td>
+                  <td>{date(item.negotiationDeadline)}</td>
+                  <td>
+                    <div className="row-actions">
+                      <button
+                        className="table-action"
+                        onClick={() =>
+                          edit(item as Property & Record<string, any>)
+                        }
+                      >
+                        Editar
+                      </button>
+                      <button
+                        className="table-action danger"
+                        onClick={() => remove(item.id)}
+                        disabled={removeMutation.isPending}
+                      >
+                        Excluir
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
+    </>
+  );
 }
 const expenseCategories = ['ITBI', 'CARTORIO', 'ADVOGADO', 'CONDOMINIO', 'IPTU', 'REFORMA', 'LIMPEZA', 'ENERGIA', 'AGUA', 'FINANCIAMENTO', 'TAXAS', 'OUTROS'];
 function Expenses() {
@@ -81,5 +614,5 @@ function Checklist() {
 	return <><div className="section-heading"><div><p className="eyebrow">ACOMPANHAMENTO DO IMÓVEL</p><h1>Checklist</h1></div><span className="date-chip">{data?.progress?.percentage ?? 0}% concluído</span></div><div className="panel checklist-summary"><div><strong>{data?.progress?.completed ?? 0} de {data?.progress?.total ?? 0}</strong><span> etapas concluídas</span></div><div className="progress-track"><div className="progress-value" style={{ width: `${data?.progress?.percentage ?? 0}%` }} /></div></div>{groups.map(([category, items]) => <section className="checklist-group" key={category}><div className="panel-title"><h3>{category}</h3><span>{items.filter(item => item.status === 'CONCLUIDO').length}/{items.length}</span></div><div className="panel checklist-items">{items.map(item => <div className="checklist-item" key={item.id}><div className="checklist-main"><input type="checkbox" checked={item.status === 'CONCLUIDO'} onChange={event => updateMutation.mutate({ id: item.id, payload: { status: event.target.checked ? 'CONCLUIDO' : 'PENDENTE' } })} /><div><strong>{item.title}</strong><p>{item.description}</p></div></div><select value={item.status} onChange={event => updateMutation.mutate({ id: item.id, payload: { status: event.target.value } })}><option value="PENDENTE">Pendente</option><option value="EM_ANDAMENTO">Em andamento</option><option value="CONCLUIDO">Concluído</option><option value="NAO_APLICAVEL">Não aplicável</option></select></div>)}</div></section>)}</>;
 }
 function Reports() { const { data } = useQuery({ queryKey: ['dashboard'], queryFn: async () => (await api.get('/dashboard')).data }); return <><div className="section-heading"><div><p className="eyebrow">ANÁLISES</p><h1>Relatórios</h1></div></div><div className="grid reports"><article className="panel"><h3>Rentabilidade consolidada</h3><p className="big-number">{(data?.averageRoi ?? 0).toFixed(1)}%</p><p className="muted">ROI médio do portfólio vendido</p><button className="secondary">Exportar relatório</button></article><article className="panel"><h3>Operações monitoradas</h3><p className="big-number">{data?.propertyCount ?? 0}</p><p className="muted">imóveis no ciclo de investimento</p><LineChart width={360} height={120} data={data?.operations ?? []}><Line type="monotone" dataKey="netProfit" stroke="#285c58" strokeWidth={3}/></LineChart></article></div></>; }
-function App() { const [logged, setLogged] = useState(Boolean(localStorage.getItem(getTokenKey()))); if (!logged) return <Routes><Route path="*" element={<Login onLogin={() => setLogged(true)} />} /></Routes>; return <Shell><Routes><Route path="/" element={<Dashboard />} /><Route path="/properties" element={<Properties />} /><Route path="/properties/:propertyId" element={<PropertyDetailPage />} /><Route path="/partners" element={<PartnersPage />} /><Route path="/properties/:propertyId/checklist" element={<ChecklistPage />} /><Route path="/operations" element={<Navigate to="/operations/expenses" replace />} /><Route path="/operations/expenses" element={<ExpensesPage />} /><Route path="/operations/purchases" element={<OperationsTransactions mode="purchase" />} /><Route path="/operations/sales" element={<OperationsTransactions mode="sale" />} /><Route path="/operations/simulation" element={<SimulationPage />} /><Route path="/reports" element={<Reports />} /><Route path="*" element={<Navigate to="/" />} /></Routes></Shell>; }
+function App() { const [logged, setLogged] = useState(Boolean(localStorage.getItem(getTokenKey()))); if (!logged) return <Routes><Route path="/register" element={<Register onLogin={() => setLogged(true)} />} /><Route path="/login" element={<Login onLogin={() => setLogged(true)} />} /><Route path="*" element={<Login onLogin={() => setLogged(true)} />} /></Routes>; return <Shell><Routes><Route path="/" element={<Dashboard />} /><Route path="/users/new" element={<Register onLogin={() => setLogged(true)} authenticated />} /><Route path="/properties" element={<Properties />} /><Route path="/properties/:propertyId" element={<PropertyDetailPage />} /><Route path="/partners" element={<PartnersPage />} /><Route path="/properties/:propertyId/checklist" element={<ChecklistPage />} /><Route path="/operations" element={<Navigate to="/operations/expenses" replace />} /><Route path="/operations/expenses" element={<ExpensesPage />} /><Route path="/operations/purchases" element={<OperationsTransactions mode="purchase" />} /><Route path="/operations/sales" element={<OperationsTransactions mode="sale" />} /><Route path="/operations/simulation" element={<SimulationPage />} /><Route path="/reports" element={<Reports />} /><Route path="*" element={<Navigate to="/" />} /></Routes></Shell>; }
 export default App;

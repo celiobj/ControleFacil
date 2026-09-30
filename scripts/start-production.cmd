@@ -18,9 +18,10 @@ if errorlevel 1 (
 
 cd /d "%PROJECT_ROOT%"
 
-if not exist "frontend\dist\index.html" (
-  echo [ERRO] Frontend compilado nao encontrado em frontend\dist.
-  echo [INFO] Execute o build antes de iniciar a aplicacao.
+echo Compilando frontend...
+call npm run build --prefix frontend
+if errorlevel 1 (
+  echo [ERRO] Nao foi possivel compilar o frontend.
   exit /b 1
 )
 

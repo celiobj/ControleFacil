@@ -21,10 +21,22 @@ const decimalInput = ({ value }) => {
         return Number(value.replace(",", "."));
     return value;
 };
+const dateInput = ({ value }) => {
+    if (value === "" || value === null)
+        return null;
+    if (value === undefined)
+        return undefined;
+    if (typeof value === "string") {
+        return new Date(`${value}T00:00:00.000Z`);
+    }
+    return value;
+};
 class PropertyDto {
     code;
     title;
     type;
+    negotiationType;
+    negotiationDeadline;
     address;
     number;
     complement;
@@ -54,6 +66,19 @@ __decorate([
     (0, class_validator_1.IsEnum)(client_1.PropertyType),
     __metadata("design:type", String)
 ], PropertyDto.prototype, "type", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({ enum: client_1.PropertyNegotiationType }),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsEnum)(client_1.PropertyNegotiationType),
+    __metadata("design:type", String)
+], PropertyDto.prototype, "negotiationType", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({ type: String, format: "date" }),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_transformer_1.Transform)(dateInput),
+    (0, class_validator_1.IsDate)(),
+    __metadata("design:type", Date)
+], PropertyDto.prototype, "negotiationDeadline", void 0);
 __decorate([
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)

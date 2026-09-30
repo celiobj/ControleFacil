@@ -8,3 +8,7 @@ export declare class PartnerDto {
     company?: string;
     notes?: string;
 }
+declare const UpdatePartnerDto_base: import("@nestjs/common").Type<Partial<PartnerDto>>;
+export declare class UpdatePartnerDto extends UpdatePartnerDto_base {
+}
+export {};

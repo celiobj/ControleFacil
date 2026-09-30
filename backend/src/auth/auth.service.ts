@@ -1,4 +1,10 @@
-import { Inject, Injectable, UnauthorizedException } from "@nestjs/common";
+import {
+  ConflictException,
+  Inject,
+  Injectable,
+  UnauthorizedException,
+} from "@nestjs/common";
+import { Prisma } from "@prisma/client";
 import { JwtService } from "@nestjs/jwt";
 import { PrismaService } from "../prisma.service";
 import * as bcrypt from "bcryptjs";
@@ -10,7 +16,10 @@ export class AuthService {
     @Inject(JwtService) private readonly jwt: JwtService,
   ) {}
   async login(email: string, password: string) {
-    const user = await this.prisma.user.findUnique({ where: { email } });
+    const normalizedEmail = email.trim().toLowerCase();
+    const user = await this.prisma.user.findUnique({
+      where: { email: normalizedEmail },
+    });
     if (
       !user ||
       !user.active ||
@@ -36,17 +45,25 @@ export class AuthService {
     name: string;
     email: string;
     password: string;
-    role?: any;
   }) {
     const passwordHash = await bcrypt.hash(data.password, 10);
-    return this.prisma.user.create({
-      data: {
-        name: data.name,
-        email: data.email,
-        passwordHash,
-        role: data.role,
-      },
-      select: { id: true, name: true, email: true, role: true, active: true },
-    });
+    try {
+      return await this.prisma.user.create({
+        data: {
+          name: data.name.trim(),
+          email: data.email.trim().toLowerCase(),
+          passwordHash,
+        },
+        select: { id: true, name: true, email: true, role: true, active: true },
+      });
+    } catch (error) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === "P2002"
+      ) {
+        throw new ConflictException("E-mail já cadastrado");
+      }
+      throw error;
+    }
   }
 }

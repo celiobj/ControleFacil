@@ -1,8 +1,10 @@
-import { PropertyStatus, PropertyType } from "@prisma/client";
+import { PropertyNegotiationType, PropertyStatus, PropertyType } from "@prisma/client";
 export declare class PropertyDto {
     code?: string;
     title: string;
     type: PropertyType;
+    negotiationType?: PropertyNegotiationType;
+    negotiationDeadline?: Date;
     address: string;
     number?: string;
     complement?: string;

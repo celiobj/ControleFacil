@@ -37,6 +37,8 @@ export declare class PropertiesController {
             code: string;
             title: string;
             type: import(".prisma/client").$Enums.PropertyType;
+            negotiationType: import(".prisma/client").$Enums.PropertyNegotiationType | null;
+            negotiationDeadline: Date | null;
             address: string;
             complement: string | null;
             neighborhood: string;
@@ -57,6 +59,25 @@ export declare class PropertiesController {
             pages: number;
         };
     }>;
+    importFromCaixaText(text: string): {
+        title: string;
+        type: string;
+        negotiationType: string;
+        negotiationDeadline: string;
+        address: string;
+        number: string;
+        complement: string;
+        neighborhood: string;
+        zipCode: string;
+        city: string;
+        state: string;
+        totalArea: string;
+        builtArea: string;
+        registryNumber: string;
+        description: string;
+        status: string;
+        notes: string;
+    };
     findOne(id: string): Promise<{
         auction: {
             id: string;
@@ -88,8 +109,8 @@ export declare class PropertiesController {
             notes: string | null;
             propertyId: string;
             category: import(".prisma/client").$Enums.ExpenseCategory;
-            amount: import("@prisma/client/runtime/library").Decimal;
             date: Date;
+            amount: import("@prisma/client/runtime/library").Decimal;
             receiptPath: string | null;
             contractor: string | null;
         }[];
@@ -104,6 +125,13 @@ export declare class PropertiesController {
             startDate: Date | null;
             endDate: Date | null;
         }[];
+        statusHistory: {
+            id: string;
+            propertyId: string;
+            changedAt: Date;
+            fromStatus: import(".prisma/client").$Enums.PropertyStatus | null;
+            toStatus: import(".prisma/client").$Enums.PropertyStatus;
+        }[];
     } & {
         number: string | null;
         id: string;
@@ -112,6 +140,8 @@ export declare class PropertiesController {
         code: string;
         title: string;
         type: import(".prisma/client").$Enums.PropertyType;
+        negotiationType: import(".prisma/client").$Enums.PropertyNegotiationType | null;
+        negotiationDeadline: Date | null;
         address: string;
         complement: string | null;
         neighborhood: string;
@@ -133,6 +163,8 @@ export declare class PropertiesController {
         code: string;
         title: string;
         type: import(".prisma/client").$Enums.PropertyType;
+        negotiationType: import(".prisma/client").$Enums.PropertyNegotiationType | null;
+        negotiationDeadline: Date | null;
         address: string;
         complement: string | null;
         neighborhood: string;
@@ -154,6 +186,8 @@ export declare class PropertiesController {
         code: string;
         title: string;
         type: import(".prisma/client").$Enums.PropertyType;
+        negotiationType: import(".prisma/client").$Enums.PropertyNegotiationType | null;
+        negotiationDeadline: Date | null;
         address: string;
         complement: string | null;
         neighborhood: string;
@@ -175,6 +209,8 @@ export declare class PropertiesController {
         code: string;
         title: string;
         type: import(".prisma/client").$Enums.PropertyType;
+        negotiationType: import(".prisma/client").$Enums.PropertyNegotiationType | null;
+        negotiationDeadline: Date | null;
         address: string;
         complement: string | null;
         neighborhood: string;

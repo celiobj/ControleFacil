@@ -6,7 +6,6 @@ const percent = (value: number) => `${value.toFixed(1).replace(".", ",")}%`;
 const numberValue = (value: string) => Number(value.replace(",", ".")) || 0;
 
 export default function SimulationPage() {
-  const [description, setDescription] = useState("");
   const [marketValue, setMarketValue] = useState("160000");
   const [purchaseValue, setPurchaseValue] = useState("87228.13");
   const [expensePercent, setExpensePercent] = useState("50");
@@ -38,14 +37,6 @@ export default function SimulationPage() {
       <div className="simulation-grid">
         <section className="simulation-card input-card">
           <h2>DADOS DA SIMULAÇÃO</h2>
-          <label>
-            Descrição do imóvel
-            <input
-              value={description}
-              onChange={(event) => setDescription(event.target.value)}
-              placeholder="Ex.: Apartamento Praia de Jangada"
-            />
-          </label>
           <label>
             Valor de mercado / venda estimada
             <input

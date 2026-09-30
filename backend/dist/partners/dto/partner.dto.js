@@ -9,11 +9,12 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.PartnerDto = void 0;
+exports.UpdatePartnerDto = exports.PartnerDto = void 0;
 const class_transformer_1 = require("class-transformer");
 const class_validator_1 = require("class-validator");
+const swagger_1 = require("@nestjs/swagger");
 const client_1 = require("@prisma/client");
-const emptyToUndefined = ({ value }) => value === "" ? undefined : value;
+const emptyToNull = ({ value }) => value === "" ? null : value;
 class PartnerDto {
     type;
     name;
@@ -37,33 +38,36 @@ __decorate([
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsString)(),
     (0, class_validator_1.MaxLength)(18),
-    (0, class_transformer_1.Transform)(emptyToUndefined),
+    (0, class_transformer_1.Transform)(emptyToNull),
     __metadata("design:type", String)
 ], PartnerDto.prototype, "document", void 0);
 __decorate([
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsEmail)(),
-    (0, class_transformer_1.Transform)(emptyToUndefined),
+    (0, class_transformer_1.Transform)(emptyToNull),
     __metadata("design:type", String)
 ], PartnerDto.prototype, "email", void 0);
 __decorate([
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsString)(),
     (0, class_validator_1.MaxLength)(30),
-    (0, class_transformer_1.Transform)(emptyToUndefined),
+    (0, class_transformer_1.Transform)(emptyToNull),
     __metadata("design:type", String)
 ], PartnerDto.prototype, "phone", void 0);
 __decorate([
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsString)(),
     (0, class_validator_1.MaxLength)(120),
-    (0, class_transformer_1.Transform)(emptyToUndefined),
+    (0, class_transformer_1.Transform)(emptyToNull),
     __metadata("design:type", String)
 ], PartnerDto.prototype, "company", void 0);
 __decorate([
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsString)(),
-    (0, class_transformer_1.Transform)(emptyToUndefined),
+    (0, class_transformer_1.Transform)(emptyToNull),
     __metadata("design:type", String)
 ], PartnerDto.prototype, "notes", void 0);
+class UpdatePartnerDto extends (0, swagger_1.PartialType)(PartnerDto) {
+}
+exports.UpdatePartnerDto = UpdatePartnerDto;
 //# sourceMappingURL=partner.dto.js.map

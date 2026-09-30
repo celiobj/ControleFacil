@@ -1,3 +1,4 @@
+import { Prisma } from "@prisma/client";
 import { PrismaService } from "../prisma.service";
 import { PartnerDto } from "./dto/partner.dto";
 export declare class PartnersService {
@@ -6,7 +7,7 @@ export declare class PartnersService {
     findAll(query: {
         type?: string;
         search?: string;
-    }): import(".prisma/client").Prisma.PrismaPromise<{
+    }): Prisma.PrismaPromise<{
         id: string;
         email: string | null;
         name: string;
@@ -18,7 +19,7 @@ export declare class PartnersService {
         phone: string | null;
         company: string | null;
     }[]>;
-    create(data: PartnerDto): import(".prisma/client").Prisma.Prisma__PartnerClient<{
+    create(data: PartnerDto): Prisma.Prisma__PartnerClient<{
         id: string;
         email: string | null;
         name: string;
@@ -29,7 +30,7 @@ export declare class PartnersService {
         document: string | null;
         phone: string | null;
         company: string | null;
-    }, never, import("@prisma/client/runtime/library").DefaultArgs, import(".prisma/client").Prisma.PrismaClientOptions>;
+    }, never, import("@prisma/client/runtime/library").DefaultArgs, Prisma.PrismaClientOptions>;
     update(id: string, data: Partial<PartnerDto>): Promise<{
         id: string;
         email: string | null;

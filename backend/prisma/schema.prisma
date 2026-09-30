@@ -29,6 +29,13 @@ enum PropertyType {
   RURAL
   OUTRO
 }
+enum PropertyNegotiationType {
+  LEILAO_SFI
+  EXERCICIO_DIREITO_PREFERENCIA
+  LICITACAO_ABERTA
+  VENDA_ONLINE
+  COMPRA_DIRETA
+}
 enum ExpenseCategory {
   ITBI
   CARTORIO
@@ -94,6 +101,8 @@ model Property {
   code            String         @unique
   title           String
   type            PropertyType
+  negotiationType PropertyNegotiationType? @map("negotiation_type")
+  negotiationDeadline DateTime? @map("negotiation_deadline") @db.Date
   address         String
   number          String?
   complement      String?
@@ -114,8 +123,21 @@ model Property {
   renovations     Renovation[]
   sale            Sale?
   checklist       PropertyChecklist?
+  statusHistory   PropertyStatusHistory[]
   @@index([city, neighborhood, status, type])
   @@map("properties")
+}
+
+model PropertyStatusHistory {
+  id         String        @id @default(uuid())
+  propertyId String        @map("property_id")
+  fromStatus PropertyStatus? @map("from_status")
+  toStatus   PropertyStatus @map("to_status")
+  changedAt  DateTime      @default(now()) @map("changed_at")
+  property   Property      @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@index([propertyId, changedAt])
+  @@map("property_status_history")
 }
 
 model PropertyChecklist {

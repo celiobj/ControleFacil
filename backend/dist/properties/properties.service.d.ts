@@ -1,10 +1,19 @@
+import { OnModuleDestroy, OnModuleInit } from "@nestjs/common";
 import { PrismaService } from "../prisma.service";
 import { ChecklistsService } from "../checklists/checklists.service";
 import { PropertyDto } from "./dto/property.dto";
-export declare class PropertiesService {
+export declare class PropertiesService implements OnModuleInit, OnModuleDestroy {
     private readonly prisma;
     private readonly checklists;
+    private readonly logger;
+    private expirationTimer?;
     constructor(prisma: PrismaService, checklists: ChecklistsService);
+    onModuleInit(): void;
+    onModuleDestroy(): void;
+    private runNegotiationDeadlineCheck;
+    cancelExpiredNegotiations(): Promise<{
+        count: number;
+    }>;
     private generateCode;
     findAll(query: {
         city?: string;
@@ -47,6 +56,8 @@ export declare class PropertiesService {
             code: string;
             title: string;
             type: import(".prisma/client").$Enums.PropertyType;
+            negotiationType: import(".prisma/client").$Enums.PropertyNegotiationType | null;
+            negotiationDeadline: Date | null;
             address: string;
             complement: string | null;
             neighborhood: string;
@@ -67,6 +78,25 @@ export declare class PropertiesService {
             pages: number;
         };
     }>;
+    importFromCaixaText(text: string): {
+        title: string;
+        type: string;
+        negotiationType: string;
+        negotiationDeadline: string;
+        address: string;
+        number: string;
+        complement: string;
+        neighborhood: string;
+        zipCode: string;
+        city: string;
+        state: string;
+        totalArea: string;
+        builtArea: string;
+        registryNumber: string;
+        description: string;
+        status: string;
+        notes: string;
+    };
     findOne(id: string): Promise<{
         auction: {
             id: string;
@@ -98,8 +128,8 @@ export declare class PropertiesService {
             notes: string | null;
             propertyId: string;
             category: import(".prisma/client").$Enums.ExpenseCategory;
-            amount: import("@prisma/client/runtime/library").Decimal;
             date: Date;
+            amount: import("@prisma/client/runtime/library").Decimal;
             receiptPath: string | null;
             contractor: string | null;
         }[];
@@ -114,6 +144,13 @@ export declare class PropertiesService {
             startDate: Date | null;
             endDate: Date | null;
         }[];
+        statusHistory: {
+            id: string;
+            propertyId: string;
+            changedAt: Date;
+            fromStatus: import(".prisma/client").$Enums.PropertyStatus | null;
+            toStatus: import(".prisma/client").$Enums.PropertyStatus;
+        }[];
     } & {
         number: string | null;
         id: string;
@@ -122,6 +159,8 @@ export declare class PropertiesService {
         code: string;
         title: string;
         type: import(".prisma/client").$Enums.PropertyType;
+        negotiationType: import(".prisma/client").$Enums.PropertyNegotiationType | null;
+        negotiationDeadline: Date | null;
         address: string;
         complement: string | null;
         neighborhood: string;
@@ -143,6 +182,8 @@ export declare class PropertiesService {
         code: string;
         title: string;
         type: import(".prisma/client").$Enums.PropertyType;
+        negotiationType: import(".prisma/client").$Enums.PropertyNegotiationType | null;
+        negotiationDeadline: Date | null;
         address: string;
         complement: string | null;
         neighborhood: string;
@@ -164,6 +205,8 @@ export declare class PropertiesService {
         code: string;
         title: string;
         type: import(".prisma/client").$Enums.PropertyType;
+        negotiationType: import(".prisma/client").$Enums.PropertyNegotiationType | null;
+        negotiationDeadline: Date | null;
         address: string;
         complement: string | null;
         neighborhood: string;
@@ -185,6 +228,8 @@ export declare class PropertiesService {
         code: string;
         title: string;
         type: import(".prisma/client").$Enums.PropertyType;
+        negotiationType: import(".prisma/client").$Enums.PropertyNegotiationType | null;
+        negotiationDeadline: Date | null;
         address: string;
         complement: string | null;
         neighborhood: string;

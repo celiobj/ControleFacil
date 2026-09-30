@@ -17,7 +17,6 @@ export declare class AuthService {
         name: string;
         email: string;
         password: string;
-        role?: any;
     }): Promise<{
         id: string;
         email: string;

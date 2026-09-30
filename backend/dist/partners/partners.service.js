@@ -44,7 +44,12 @@ let PartnersService = class PartnersService {
         const partner = await this.prisma.partner.findUnique({ where: { id } });
         if (!partner)
             throw new common_1.NotFoundException("Cadastro não encontrado");
-        return this.prisma.partner.update({ where: { id }, data });
+        const updateData = { ...data };
+        for (const field of ["document", "email", "phone", "company", "notes"]) {
+            if (updateData[field] === "")
+                updateData[field] = null;
+        }
+        return this.prisma.partner.update({ where: { id }, data: updateData });
     }
     async remove(id) {
         const partner = await this.prisma.partner.findUnique({ where: { id } });

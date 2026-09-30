@@ -42,4 +42,25 @@ export type Property = {
   status: string;
   type: string;
   createdAt: string;
+  negotiationDeadline?: string | null;
+};
+
+export type CaixaPropertyImport = {
+  title: string;
+  type: string;
+  negotiationType: string;
+  negotiationDeadline: string;
+  address: string;
+  number: string;
+  complement: string;
+  neighborhood: string;
+  city: string;
+  state: string;
+  zipCode: string;
+  totalArea: string;
+  builtArea: string;
+  registryNumber: string;
+  description: string;
+  status: string;
+  notes: string;
 };

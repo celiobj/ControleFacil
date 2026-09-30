@@ -2,12 +2,17 @@ import { ApiPropertyOptional } from "@nestjs/swagger";
 import { Transform } from "class-transformer";
 import {
   IsEnum,
+  IsDate,
   IsNumber,
   IsOptional,
   IsString,
   MaxLength,
 } from "class-validator";
-import { PropertyStatus, PropertyType } from "@prisma/client";
+import {
+  PropertyNegotiationType,
+  PropertyStatus,
+  PropertyType,
+} from "@prisma/client";
 
 const decimalInput = ({ value }: { value: unknown }) => {
   if (value === "" || value === null || value === undefined) return undefined;
@@ -15,10 +20,23 @@ const decimalInput = ({ value }: { value: unknown }) => {
   return value;
 };
 
+const dateInput = ({ value }: { value: unknown }) => {
+  if (value === "" || value === null) return null;
+  if (value === undefined) return undefined;
+  if (typeof value === "string") {
+    return new Date(`${value}T00:00:00.000Z`);
+  }
+  return value;
+};
+
 export class PropertyDto {
   @IsOptional() @IsString() @MaxLength(30) code?: string;
   @IsString() title!: string;
   @IsEnum(PropertyType) type!: PropertyType;
+  @ApiPropertyOptional({ enum: PropertyNegotiationType })
+  @IsOptional() @IsEnum(PropertyNegotiationType) negotiationType?: PropertyNegotiationType;
+  @ApiPropertyOptional({ type: String, format: "date" })
+  @IsOptional() @Transform(dateInput) @IsDate() negotiationDeadline?: Date;
   @IsString() address!: string;
   @IsOptional() @IsString() number?: string;
   @IsOptional() @IsString() complement?: string;

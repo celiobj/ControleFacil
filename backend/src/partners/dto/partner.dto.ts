@@ -1,9 +1,10 @@
 import { Transform } from "class-transformer";
 import { IsEmail, IsEnum, IsOptional, IsString, MaxLength } from "class-validator";
+import { PartialType } from "@nestjs/swagger";
 import { PartnerType } from "@prisma/client";
 
-const emptyToUndefined = ({ value }: { value: unknown }) =>
-  value === "" ? undefined : value;
+const emptyToNull = ({ value }: { value: unknown }) =>
+  value === "" ? null : value;
 
 export class PartnerDto {
   @IsEnum(PartnerType)
@@ -16,28 +17,30 @@ export class PartnerDto {
   @IsOptional()
   @IsString()
   @MaxLength(18)
-  @Transform(emptyToUndefined)
+  @Transform(emptyToNull)
   document?: string;
 
   @IsOptional()
   @IsEmail()
-  @Transform(emptyToUndefined)
+  @Transform(emptyToNull)
   email?: string;
 
   @IsOptional()
   @IsString()
   @MaxLength(30)
-  @Transform(emptyToUndefined)
+  @Transform(emptyToNull)
   phone?: string;
 
   @IsOptional()
   @IsString()
   @MaxLength(120)
-  @Transform(emptyToUndefined)
+  @Transform(emptyToNull)
   company?: string;
 
   @IsOptional()
   @IsString()
-  @Transform(emptyToUndefined)
+  @Transform(emptyToNull)
   notes?: string;
 }
+
+export class UpdatePartnerDto extends PartialType(PartnerDto) {}

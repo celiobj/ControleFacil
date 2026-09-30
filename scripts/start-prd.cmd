@@ -8,8 +8,10 @@ if errorlevel 1 (
   echo [ERRO] Node.js nao encontrado no PATH.
   exit /b 1
 )
-if not exist "frontend\dist\index.html" (
-  echo [ERRO] Frontend compilado nao encontrado em frontend\dist.
+echo [ControleFacil] Compilando frontend...
+call npm run build --prefix frontend
+if errorlevel 1 (
+  echo [ERRO] Nao foi possivel compilar o frontend.
   exit /b 1
 )
 

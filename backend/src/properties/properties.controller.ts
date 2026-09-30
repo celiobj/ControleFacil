@@ -26,6 +26,10 @@ export class PropertiesController {
   @Get() findAll(@Query() query: any) {
     return this.service.findAll(query);
   }
+  @Post("import/caixa/text")
+  importFromCaixaText(@Body("text") text: string) {
+    return this.service.importFromCaixaText(text);
+  }
   @Get(":id") findOne(@Param("id") id: string) {
     return this.service.findOne(id);
   }

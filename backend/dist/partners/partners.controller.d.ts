@@ -1,4 +1,4 @@
-import { PartnerDto } from "./dto/partner.dto";
+import { PartnerDto, UpdatePartnerDto } from "./dto/partner.dto";
 import { PartnersService } from "./partners.service";
 export declare class PartnersController {
     private readonly service;
@@ -30,7 +30,7 @@ export declare class PartnersController {
         phone: string | null;
         company: string | null;
     }, never, import("@prisma/client/runtime/library").DefaultArgs, import(".prisma/client").Prisma.PrismaClientOptions>;
-    update(id: string, dto: Partial<PartnerDto>): Promise<{
+    update(id: string, dto: UpdatePartnerDto): Promise<{
         id: string;
         email: string | null;
         name: string;

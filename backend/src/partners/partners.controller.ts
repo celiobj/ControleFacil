@@ -12,7 +12,7 @@ import {
 } from "@nestjs/common";
 import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 import { JwtGuard } from "../auth/jwt.guard";
-import { PartnerDto } from "./dto/partner.dto";
+import { PartnerDto, UpdatePartnerDto } from "./dto/partner.dto";
 import { PartnersService } from "./partners.service";
 
 @ApiTags("partners")
@@ -33,7 +33,7 @@ export class PartnersController {
   }
 
   @Patch(":id")
-  update(@Param("id") id: string, @Body() dto: Partial<PartnerDto>) {
+  update(@Param("id") id: string, @Body() dto: UpdatePartnerDto) {
     return this.service.update(id, dto);
   }
 

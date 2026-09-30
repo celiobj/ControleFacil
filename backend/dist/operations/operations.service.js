@@ -68,10 +68,23 @@ let OperationsService = class OperationsService {
                 create: { propertyId, ...normalizedData },
                 update: normalizedData,
             });
+            const current = await transaction.property.findUnique({
+                where: { id: propertyId },
+                select: { status: true },
+            });
             await transaction.property.update({
                 where: { id: propertyId },
                 data: { status: "ARREMATADO" },
             });
+            if (current && current.status !== "ARREMATADO") {
+                await transaction.propertyStatusHistory.create({
+                    data: {
+                        propertyId,
+                        fromStatus: current.status,
+                        toStatus: "ARREMATADO",
+                    },
+                });
+            }
             return auction;
         });
     }
@@ -93,10 +106,23 @@ let OperationsService = class OperationsService {
                 create: { propertyId, ...normalizedData },
                 update: normalizedData,
             });
+            const current = await transaction.property.findUnique({
+                where: { id: propertyId },
+                select: { status: true },
+            });
             await transaction.property.update({
                 where: { id: propertyId },
                 data: { status: "VENDIDO" },
             });
+            if (current && current.status !== "VENDIDO") {
+                await transaction.propertyStatusHistory.create({
+                    data: {
+                        propertyId,
+                        fromStatus: current.status,
+                        toStatus: "VENDIDO",
+                    },
+                });
+            }
             return sale;
         });
     }

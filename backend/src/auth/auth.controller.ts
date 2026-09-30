@@ -1,6 +1,6 @@
 import { Body, Controller, Inject, Post } from "@nestjs/common";
 import { ApiTags } from "@nestjs/swagger";
-import { IsEmail, IsOptional, IsString, MinLength } from "class-validator";
+import { IsEmail, IsNotEmpty, IsString, MinLength } from "class-validator";
 import { AuthService } from "./auth.service";
 
 class LoginDto {
@@ -8,10 +8,9 @@ class LoginDto {
   @IsString() password!: string;
 }
 class RegisterDto {
-  @IsString() name!: string;
+  @IsString() @IsNotEmpty() name!: string;
   @IsEmail() email!: string;
-  @MinLength(8) password!: string;
-  @IsOptional() role?: "ADMIN" | "INVESTIDOR" | "CONSULTA";
+  @IsString() @MinLength(8) password!: string;
 }
 @ApiTags("auth")
 @Controller("auth")

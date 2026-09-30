@@ -47,6 +47,7 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AuthService = void 0;
 const common_1 = require("@nestjs/common");
+const client_1 = require("@prisma/client");
 const jwt_1 = require("@nestjs/jwt");
 const prisma_service_1 = require("../prisma.service");
 const bcrypt = __importStar(require("bcryptjs"));
@@ -58,7 +59,10 @@ let AuthService = class AuthService {
         this.jwt = jwt;
     }
     async login(email, password) {
-        const user = await this.prisma.user.findUnique({ where: { email } });
+        const normalizedEmail = email.trim().toLowerCase();
+        const user = await this.prisma.user.findUnique({
+            where: { email: normalizedEmail },
+        });
         if (!user ||
             !user.active ||
             !(await bcrypt.compare(password, user.passwordHash)))
@@ -80,15 +84,23 @@ let AuthService = class AuthService {
     }
     async register(data) {
         const passwordHash = await bcrypt.hash(data.password, 10);
-        return this.prisma.user.create({
-            data: {
-                name: data.name,
-                email: data.email,
-                passwordHash,
-                role: data.role,
-            },
-            select: { id: true, name: true, email: true, role: true, active: true },
-        });
+        try {
+            return await this.prisma.user.create({
+                data: {
+                    name: data.name.trim(),
+                    email: data.email.trim().toLowerCase(),
+                    passwordHash,
+                },
+                select: { id: true, name: true, email: true, role: true, active: true },
+            });
+        }
+        catch (error) {
+            if (error instanceof client_1.Prisma.PrismaClientKnownRequestError &&
+                error.code === "P2002") {
+                throw new common_1.ConflictException("E-mail já cadastrado");
+            }
+            throw error;
+        }
     }
 };
 exports.AuthService = AuthService;
