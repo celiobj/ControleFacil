@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Link, useParams } from "react-router-dom";
+import { Link, useLocation, useParams } from "react-router-dom";
 import {
   CartesianGrid,
   Line,
@@ -11,6 +11,7 @@ import {
   YAxis,
 } from "recharts";
 import { api } from "./api";
+import PropertyOperationTab from "./PropertyOperationTab";
 
 const brl = (value: unknown) =>
   Number(value ?? 0).toLocaleString("pt-BR", {
@@ -54,9 +55,30 @@ const statusLabels: Record<string, string> = {
   CANCELADO: "Cancelado",
 };
 
+const workspaceTabs = [
+  ["summary", "Resumo"],
+  ["acquisition", "Aquisição"],
+  ["regularization", "Regularização"],
+  ["possession", "Posse"],
+  ["renovation", "Reforma"],
+  ["expenses", "Despesas"],
+  ["documents", "Documentos"],
+  ["sale", "Venda"],
+  ["financial", "Financeiro"],
+  ["scenarios", "Cenários"],
+  ["timeline", "Timeline"],
+  ["checklist", "Checklist"],
+] as const;
+
 export default function PropertyDetailPage() {
   const { propertyId } = useParams();
+  const location = useLocation();
   const [activeTab, setActiveTab] = useState<"details" | "timeline">("details");
+  const pathParts = location.pathname.split("/").filter(Boolean);
+  const requestedTab = pathParts[pathParts.length - 1];
+  const operationTab = workspaceTabs.some(([id]) => id === requestedTab)
+    ? requestedTab!
+    : "summary";
   const { data: property, isLoading, isError } = useQuery({
     queryKey: ["property", propertyId],
     queryFn: async () => (await api.get(`/properties/${propertyId}`)).data,
@@ -94,6 +116,20 @@ export default function PropertyDetailPage() {
         <Link className="secondary" to={`/properties/${property.id}/checklist`}>Checklist</Link>
       </div>
 
+      <nav className="detail-tabs operation-tabs" role="tablist" aria-label="Etapas da operação">
+        {workspaceTabs.map(([id, label]) => {
+          const path = id === "summary" ? `/properties/${property.id}` : `/properties/${property.id}/${id}`;
+          return <Link
+            key={id}
+            className={operationTab === id ? "detail-tab active" : "detail-tab"}
+            to={path}
+            role="tab"
+            aria-selected={operationTab === id}
+          >{label}</Link>;
+        })}
+      </nav>
+
+      {operationTab === "summary" ? <>
       <div className="detail-tabs" role="tablist" aria-label="Visualizações do imóvel">
         <button
           id="property-details-tab"
@@ -222,6 +258,7 @@ export default function PropertyDetailPage() {
           </ol>
         </> : <p className="empty-state">Ainda não há alterações de status registradas para este imóvel.</p>}
       </section>}
+      </> : <PropertyOperationTab tab={operationTab} property={property} />}
     </>
   );
 }

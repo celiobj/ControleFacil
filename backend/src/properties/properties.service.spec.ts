@@ -1,6 +1,22 @@
 import { PropertiesService } from "./properties.service";
 
 describe("PropertiesService", () => {
+  it("orders properties by their most recent update", async () => {
+    const prisma = {
+      property: {
+        findMany: jest.fn().mockResolvedValue([]),
+        count: jest.fn().mockResolvedValue(0),
+      },
+    } as any;
+    const service = new PropertiesService(prisma, {} as any);
+
+    await service.findAll({});
+
+    expect(prisma.property.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({ orderBy: { updatedAt: "desc" } }),
+    );
+  });
+
   it("parses the CAIXA listing text into property form fields", () => {
     const text = `##### RESIDENCIAL PRAIA DE JANGADA
 
@@ -135,11 +151,13 @@ REGRAS PARA PAGAMENTO DAS DESPESAS (caso existam):
         updateMany: jest.fn().mockResolvedValue({ count: 1 }),
       },
       propertyStatusHistory: { create: jest.fn().mockResolvedValue({}) },
+      propertyEvent: { create: jest.fn().mockResolvedValue({}) },
     } as any;
     prisma.$transaction = jest.fn((callback: any) =>
       callback({
         property: prisma.property,
         propertyStatusHistory: prisma.propertyStatusHistory,
+        propertyEvent: prisma.propertyEvent,
       }),
     );
     const service = new PropertiesService(prisma, {} as any);
@@ -164,6 +182,14 @@ REGRAS PARA PAGAMENTO DAS DESPESAS (caso existam):
         toStatus: "CANCELADO",
       },
     });
+    expect(prisma.propertyEvent.create).toHaveBeenCalledWith({
+      data: {
+        propertyId: "p-1",
+        type: "STATUS_CHANGE",
+        title: "Análise cancelada por prazo vencido",
+        description: "O prazo de negociação foi encerrado.",
+      },
+    });
   });
 
   it("normalizes the negotiation deadline before updating a property", async () => {
@@ -176,11 +202,13 @@ REGRAS PARA PAGAMENTO DAS DESPESAS (caso existam):
         update: jest.fn().mockResolvedValue({ id: "p-1" }),
       },
       propertyStatusHistory: { create: jest.fn().mockResolvedValue({}) },
+      propertyEvent: { create: jest.fn().mockResolvedValue({}) },
     } as any;
     prisma.$transaction = jest.fn((callback: any) =>
       callback({
         property: prisma.property,
         propertyStatusHistory: prisma.propertyStatusHistory,
+        propertyEvent: prisma.propertyEvent,
       }),
     );
     const service = new PropertiesService(prisma, {} as any);
@@ -210,11 +238,13 @@ REGRAS PARA PAGAMENTO DAS DESPESAS (caso existam):
         update: jest.fn().mockResolvedValue({ id: "p-1", status: "REFORMA" }),
       },
       propertyStatusHistory: { create: jest.fn().mockResolvedValue({}) },
+      propertyEvent: { create: jest.fn().mockResolvedValue({}) },
     } as any;
     prisma.$transaction = jest.fn((callback: any) =>
       callback({
         property: prisma.property,
         propertyStatusHistory: prisma.propertyStatusHistory,
+        propertyEvent: prisma.propertyEvent,
       }),
     );
     const service = new PropertiesService(prisma, {} as any);
@@ -226,6 +256,15 @@ REGRAS PARA PAGAMENTO DAS DESPESAS (caso existam):
         propertyId: "p-1",
         fromStatus: "EM_ANALISE",
         toStatus: "REFORMA",
+      },
+    });
+    expect(prisma.propertyEvent.create).toHaveBeenCalledWith({
+      data: {
+        propertyId: "p-1",
+        userId: undefined,
+        type: "STATUS_CHANGE",
+        title: "Status do imóvel alterado",
+        description: "EM_ANALISE → REFORMA",
       },
     });
   });

@@ -203,6 +203,11 @@ const checklistRows: [string, string, string, string][] = [
     "Trocar fechaduras e assumir controle do imóvel",
     "Comprador",
   ],
+  ["POSSE", "Imóvel", "Fotografar o imóvel", "Comprador"],
+  ["POSSE", "Serviços", "Atualizar cadastro de água", "Comprador"],
+  ["POSSE", "Serviços", "Atualizar cadastro de energia", "Comprador"],
+  ["POSSE", "Encargos", "Verificar débitos de condomínio", "Comprador"],
+  ["POSSE", "Encargos", "Verificar débitos de IPTU", "Comprador"],
   [
     "POSSE",
     "Imóvel ocupado",
@@ -294,14 +299,10 @@ export class ChecklistsService {
       where: { propertyId },
       include: { items: { orderBy: { sortOrder: "asc" } } },
     });
-    if (!checklist || checklist.items.length !== defaultItems.length) {
-      if (checklist)
-        await this.prisma.checklistItem.deleteMany({
-          where: { checklistId: checklist.id },
-        });
-      const checklistRecord =
-        checklist ??
-        (await this.prisma.propertyChecklist.create({ data: { propertyId } }));
+    if (!checklist) {
+      const checklistRecord = await this.prisma.propertyChecklist.create({
+        data: { propertyId },
+      });
       await this.prisma.checklistItem.createMany({
         data: defaultItems.map((item) => ({
           ...item,
@@ -312,6 +313,32 @@ export class ChecklistsService {
         where: { id: checklistRecord.id },
         include: { items: { orderBy: { sortOrder: "asc" } } },
       });
+    } else {
+      const taskKey = (item: { phase: string; stage: string; task: string }) =>
+        JSON.stringify([item.phase, item.stage, item.task]);
+      const existingKeys = new Set(checklist.items.map(taskKey));
+      const missingItems = defaultItems.filter(
+        (item) => !existingKeys.has(taskKey(item)),
+      );
+      const lastSortOrder = checklist.items.reduce(
+        (maximum, item) => Math.max(maximum, item.sortOrder),
+        -1,
+      );
+      const checklistId = checklist.id;
+
+      if (missingItems.length) {
+        await this.prisma.checklistItem.createMany({
+          data: missingItems.map((item, index) => ({
+            ...item,
+            checklistId,
+            sortOrder: lastSortOrder + index + 1,
+          })),
+        });
+        checklist = await this.prisma.propertyChecklist.findUniqueOrThrow({
+          where: { id: checklistId },
+          include: { items: { orderBy: { sortOrder: "asc" } } },
+        });
+      }
     }
     return this.withProgress(checklist);
   }

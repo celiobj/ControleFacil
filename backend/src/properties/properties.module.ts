@@ -7,7 +7,7 @@ import { ChecklistsModule } from "../checklists/checklists.module";
 
 @Module({
   imports: [
-    JwtModule.register({ secret: process.env.JWT_SECRET ?? "change-me" }),
+    JwtModule.register({ secret: process.env.JWT_SECRET }),
     ChecklistsModule,
   ],
   controllers: [PropertiesController],

@@ -6,7 +6,7 @@ import { OperationsService } from "./operations.service";
 
 @Module({
   imports: [
-    JwtModule.register({ secret: process.env.JWT_SECRET ?? "change-me" }),
+    JwtModule.register({ secret: process.env.JWT_SECRET }),
   ],
   controllers: [OperationsController],
   providers: [OperationsService, PrismaService],

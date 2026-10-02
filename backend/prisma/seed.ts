@@ -8,7 +8,11 @@ import * as bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
 async function main() {
-  const passwordHash = await bcrypt.hash("Admin@123", 10);
+  const seedAdminPassword = process.env.SEED_ADMIN_PASSWORD;
+  if (!seedAdminPassword) {
+    throw new Error("SEED_ADMIN_PASSWORD must be set to run the seed");
+  }
+  const passwordHash = await bcrypt.hash(seedAdminPassword, 10);
   await prisma.user.upsert({
     where: { email: "admin@admin.com" },
     update: {},

@@ -5,7 +5,7 @@ import { PartnersController } from "./partners.controller";
 import { PartnersService } from "./partners.service";
 
 @Module({
-  imports: [JwtModule.register({ secret: process.env.JWT_SECRET ?? "change-me" })],
+  imports: [JwtModule.register({ secret: process.env.JWT_SECRET })],
   controllers: [PartnersController],
   providers: [PartnersService, PrismaService],
 })

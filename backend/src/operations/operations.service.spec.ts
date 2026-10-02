@@ -10,6 +10,7 @@ describe("OperationsService status history", () => {
         update: jest.fn().mockResolvedValue({}),
       },
       propertyStatusHistory: { create: jest.fn().mockResolvedValue({}) },
+      propertyEvent: { create: jest.fn().mockResolvedValue({}) },
     };
     const prisma = {
       $transaction: jest.fn((callback: any) => callback(transaction)),

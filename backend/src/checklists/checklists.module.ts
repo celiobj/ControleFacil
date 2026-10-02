@@ -6,7 +6,7 @@ import { ChecklistsService } from "./checklists.service";
 
 @Module({
   imports: [
-    JwtModule.register({ secret: process.env.JWT_SECRET ?? "change-me" }),
+    JwtModule.register({ secret: process.env.JWT_SECRET }),
   ],
   controllers: [ChecklistsController],
   providers: [ChecklistsService, PrismaService],

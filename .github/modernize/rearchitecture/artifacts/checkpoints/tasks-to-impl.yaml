@@ -1,0 +1,19 @@
+task_id: t4
+role: backend
+status: complete
+upstream:
+  - .github/modernize/rearchitecture/artifacts/t1-architect.md
+  - .github/modernize/rearchitecture/artifacts/t3-backend.md
+outputs:
+  - backend/src/financial/financial.service.ts
+  - backend/src/financial/financial.module.ts
+  - backend/src/acquisitions/acquisitions.controller.ts
+  - backend/src/acquisitions/acquisitions.service.ts
+  - backend/src/acquisitions/acquisitions.module.ts
+  - backend/src/acquisitions/dto/acquisition.dto.ts
+validation:
+  focused_tests: 8
+  failed: 0
+  prisma_validate: passed
+  prisma_generate: passed
+  backend_build: passed

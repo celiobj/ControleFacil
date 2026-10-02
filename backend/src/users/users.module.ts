@@ -6,7 +6,7 @@ import { UsersService } from "./users.service";
 
 @Module({
   imports: [
-    JwtModule.register({ secret: process.env.JWT_SECRET ?? "change-me" }),
+    JwtModule.register({ secret: process.env.JWT_SECRET }),
   ],
   controllers: [UsersController],
   providers: [UsersService, PrismaService],

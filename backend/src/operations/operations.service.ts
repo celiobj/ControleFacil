@@ -1,5 +1,5 @@
 import { Inject, Injectable } from "@nestjs/common";
-import { ExpenseCategory } from "@prisma/client";
+import { ExpenseCategory, FinancialCostCategory } from "@prisma/client";
 import { PrismaService } from "../prisma.service";
 
 @Injectable()
@@ -15,6 +15,8 @@ export class OperationsService {
   createExpense(data: {
     propertyId: string;
     category: ExpenseCategory;
+    financialCategory?: FinancialCostCategory;
+    renovationId?: string;
     description: string;
     amount: number;
     date: string;
@@ -25,6 +27,9 @@ export class OperationsService {
     return this.prisma.expense.create({
       data: { ...data, date: new Date(data.date) },
     });
+  }
+  deleteExpense(id: string) {
+    return this.prisma.expense.delete({ where: { id } });
   }
   listRenovations(propertyId?: string) {
     return this.prisma.renovation.findMany({
@@ -47,7 +52,7 @@ export class OperationsService {
       orderBy: { auctionDate: "desc" },
     });
   }
-  createAuction(data: any) {
+  createAuction(data: any, userId?: string) {
     const { propertyId, ...auctionData } = data;
     const normalizedData = {
       ...auctionData,
@@ -79,6 +84,15 @@ export class OperationsService {
           },
         });
       }
+      await transaction.propertyEvent.create({
+        data: {
+          propertyId,
+          userId,
+          type: "ARREMATACAO",
+          title: "Arrematação registrada",
+          occurredAt: normalizedData.auctionDate,
+        },
+      });
       return auction;
     });
   }
@@ -88,7 +102,7 @@ export class OperationsService {
       orderBy: { saleDate: "desc" },
     });
   }
-  createSale(data: any) {
+  createSale(data: any, userId?: string) {
     const { propertyId, ...saleData } = data;
     const normalizedData = {
       ...saleData,
@@ -117,6 +131,15 @@ export class OperationsService {
           },
         });
       }
+      await transaction.propertyEvent.create({
+        data: {
+          propertyId,
+          userId,
+          type: "VENDA",
+          title: "Venda registrada",
+          occurredAt: normalizedData.saleDate,
+        },
+      });
       return sale;
     });
   }

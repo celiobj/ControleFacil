@@ -18,6 +18,13 @@ if errorlevel 1 (
 
 cd /d "%PROJECT_ROOT%"
 
+echo Compilando backend...
+call npm run build --prefix backend
+if errorlevel 1 (
+  echo [ERRO] Nao foi possivel compilar o backend.
+  exit /b 1
+)
+
 echo Compilando frontend...
 call npm run build --prefix frontend
 if errorlevel 1 (
@@ -34,7 +41,7 @@ if errorlevel 1 (
 
 echo Iniciando backend e frontend...
 
-start "ControleFacil Backend" /b cmd /c "node backend\dist\main.js"
+start "ControleFacil Backend" /b cmd /c "npm run start --prefix backend"
 start "ControleFacil Frontend" /b cmd /c "npm run preview --prefix frontend -- --host 0.0.0.0"
 
 echo.

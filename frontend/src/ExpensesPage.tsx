@@ -21,6 +21,8 @@ const initialForm = {
   propertyId: "",
   propertySearch: "",
   category: "OUTROS",
+  financialCategory: "",
+  renovationId: "",
   contractor: "",
   description: "",
   amount: "",
@@ -40,6 +42,12 @@ export default function ExpensesPage() {
     queryKey: ["partners", "EMPREITEIRA"],
     queryFn: async () => (await api.get("/partners?type=EMPREITEIRA")).data,
   });
+  const { data: renovations = [] } = useQuery({
+    queryKey: ["renovations", form.propertyId],
+    queryFn: async () =>
+      (await api.get(`/renovations?propertyId=${form.propertyId}`)).data,
+    enabled: Boolean(form.propertyId),
+  });
   const { data: expenses = [], isLoading } = useQuery({
     queryKey: ["expenses"],
     queryFn: async () => (await api.get("/expenses")).data,
@@ -57,6 +65,8 @@ export default function ExpensesPage() {
       return api.post("/expenses", {
         ...expense,
         amount: Number(form.amount),
+        financialCategory: form.financialCategory || undefined,
+        renovationId: form.renovationId || undefined,
         contractor: form.category === "REFORMA" ? form.contractor : undefined,
       });
     },
@@ -67,6 +77,15 @@ export default function ExpensesPage() {
       setFeedback("Despesa registrada com sucesso.");
     },
     onError: () => setFeedback("Não foi possível registrar a despesa."),
+  });
+  const removeMutation = useMutation({
+    mutationFn: (id: string) => api.delete(`/expenses/${id}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["expenses"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
+      setFeedback("Despesa excluída.");
+    },
+    onError: () => setFeedback("Não foi possível excluir a despesa."),
   });
   const update = (field: string, value: string) =>
     setForm((current) => ({ ...current, [field]: value }));
@@ -144,24 +163,57 @@ export default function ExpensesPage() {
               ))}
             </select>
           </label>
+          <label>
+            Grupo financeiro
+            <select
+              value={form.financialCategory}
+              onChange={(event) => update("financialCategory", event.target.value)}
+            >
+              <option value="">Automático pela categoria</option>
+              <option value="ACQUISITION">Aquisição</option>
+              <option value="REGULARIZATION">Regularização</option>
+              <option value="POSSESSION">Posse</option>
+              <option value="RENOVATION">Reforma</option>
+              <option value="OPERATIONAL">Operação</option>
+              <option value="FINANCING">Financeiro</option>
+              <option value="SALE">Venda</option>
+              <option value="OTHER">Outros</option>
+            </select>
+          </label>
           {form.category === "REFORMA" && (
-            <label>
-              Empreiteira *
-              <input
-                required
-                list="contractor-options"
-                value={form.contractor}
-                onChange={(event) => update("contractor", event.target.value)}
-                placeholder="Pesquise uma empreiteira cadastrada"
-              />
-              <datalist id="contractor-options">
-                {contractors.map((partner) => (
-                  <option value={partner.name} key={partner.id}>
-                    {partner.company || partner.name}
-                  </option>
-                ))}
-              </datalist>
-            </label>
+            <>
+              <label>
+                Reforma relacionada
+                <select
+                  value={form.renovationId}
+                  onChange={(event) => update("renovationId", event.target.value)}
+                >
+                  <option value="">Sem vínculo</option>
+                  {renovations.map((renovation: any) => (
+                    <option key={renovation.id} value={renovation.id}>
+                      {renovation.description}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label>
+                Empreiteira *
+                <input
+                  required
+                  list="contractor-options"
+                  value={form.contractor}
+                  onChange={(event) => update("contractor", event.target.value)}
+                  placeholder="Pesquise uma empreiteira cadastrada"
+                />
+                <datalist id="contractor-options">
+                  {contractors.map((partner) => (
+                    <option value={partner.name} key={partner.id}>
+                      {partner.company || partner.name}
+                    </option>
+                  ))}
+                </datalist>
+              </label>
+            </>
           )}
           <label>
             Descrição *
@@ -221,9 +273,11 @@ export default function ExpensesPage() {
                 <th>Data</th>
                 <th>Imóvel</th>
                 <th>Categoria</th>
+                <th>Grupo</th>
                 <th>Descrição</th>
                 <th>Empreiteira</th>
                 <th>Valor</th>
+                              <th>Ações</th>
               </tr>
             </thead>
             <tbody>
@@ -236,6 +290,7 @@ export default function ExpensesPage() {
                   <td>
                     <span className="tag">{expense.category}</span>
                   </td>
+                  <td>{expense.financialCategory ?? "Automático"}</td>
                   <td>{expense.description}</td>
                   <td>{expense.contractor || "-"}</td>
                   <td>
@@ -245,6 +300,20 @@ export default function ExpensesPage() {
                         currency: "BRL",
                       })}
                     </strong>
+                  </td>
+                  <td>
+                    <button
+                      className="secondary"
+                      type="button"
+                      disabled={removeMutation.isPending}
+                      onClick={() => {
+                        if (window.confirm("Excluir esta despesa?")) {
+                          removeMutation.mutate(expense.id);
+                        }
+                      }}
+                    >
+                      Excluir
+                    </button>
                   </td>
                 </tr>
               ))}

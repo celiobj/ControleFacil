@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Link, Navigate, NavLink, Route, Routes, useNavigate, useParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api, environmentConfig, getEnvironment, getTokenKey, setEnvironment, Property, CaixaPropertyImport, AppEnvironment } from './api';
-import ChecklistPage from './ChecklistPage';
 import SimulationPage from './SimulationPage';
 import PartnersPage from './PartnersPage';
 import PurchaseTransaction from './PurchaseTransaction';
@@ -15,11 +14,11 @@ import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined';
 import CloseOutlinedIcon from '@mui/icons-material/CloseOutlined';
 
 const menu = [['/','Visão Geral'],['/properties','Imóveis'],['/partners','Cadastros']];
-const brl = (value: number) => value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+const brl = (value: unknown) => Number(value ?? 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 const date = (value?: string | null) => value ? new Date(value).toISOString().slice(0, 10).split('-').reverse().join('/') : '-';
 function Login({ onLogin }: { onLogin: () => void }) {
 	const [email, setEmail] = useState('admin@admin.com');
-	const [password, setPassword] = useState('Admin@123');
+  const [password, setPassword] = useState('');
 	const [environment, setSelectedEnvironment] = useState<AppEnvironment>(getEnvironment());
 	const [error, setError] = useState('');
 	const submit = async (event: React.FormEvent) => {
@@ -85,7 +84,63 @@ function Shell({ children }: { children: React.ReactNode }) {
 	const [userMenuOpen, setUserMenuOpen] = useState(false);
 	return <div className="shell"><aside><div className="brand"><span>CF</span><strong>controle fácil</strong></div><p className="workspace">PAINEL OPERACIONAL</p><div className={`environment-badge environment-${environment}`}>{environmentConfig[environment].label}</div><nav>{menu.map(([to, label]) => <NavLink key={to} to={to} end={to === '/'}>{label}</NavLink>)}<div className="operations-submenu"><span>Operações</span><div className="operations-children"><NavLink to="/operations/purchases">Compra</NavLink><NavLink to="/operations/expenses">Despesas</NavLink><NavLink to="/operations/sales">Venda</NavLink><NavLink to="/operations/simulation">Simulação</NavLink></div></div><NavLink to="/reports">Relatórios</NavLink></nav><button className="logout" onClick={() => { localStorage.removeItem(getTokenKey()); navigate('/login'); }}>Sair</button></aside><section className="content"><header><div><span className="eyebrow">PORTFÓLIO IMOBILIÁRIO</span><h2>Bom dia, administrador</h2></div><button className="avatar" type="button" aria-label="Abrir menu do usuário" aria-haspopup="dialog" aria-expanded={userMenuOpen} onClick={() => setUserMenuOpen(true)}>AD</button></header>{children}</section>{userMenuOpen && <><button className="user-menu-backdrop" aria-label="Fechar menu do usuário" onClick={() => setUserMenuOpen(false)} /><section className="user-drawer" role="dialog" aria-modal="true" aria-labelledby="user-drawer-title"><div className="user-drawer-header"><div><span className="eyebrow">CONTA</span><h2 id="user-drawer-title">Menu do usuário</h2></div><button className="user-drawer-close" type="button" aria-label="Fechar menu" onClick={() => setUserMenuOpen(false)}><CloseOutlinedIcon /></button></div><Link className="user-menu-link" to="/users/new" onClick={() => setUserMenuOpen(false)}><PersonAddAlt1OutlinedIcon fontSize="small" /><span>Criar usuário</span></Link></section></>}</div>;
 }
-function Dashboard() { const { data, isLoading } = useQuery({ queryKey: ['dashboard'], queryFn: async () => (await api.get('/dashboard')).data }); if (isLoading) return <p>Carregando painel...</p>; const cards = [['Total investido', data?.totalInvested ?? 0], ['Total vendido', data?.totalSold ?? 0], ['Lucro acumulado', data?.accumulatedProfit ?? 0]]; const chart = data?.operations?.map((item: any) => ({ name: item.code, lucro: item.netProfit })) ?? []; return <><div className="section-heading"><div><p className="eyebrow">RESUMO EXECUTIVO</p><h1>Visão geral</h1></div><span className="date-chip">Atualizado agora</span></div><div className="cards">{cards.map(([label, value]) => <article className="metric" key={label as string}><span>{label}</span><strong>{brl(value as number)}</strong></article>)}<article className="metric accent"><span>ROI médio</span><strong>{(data?.averageRoi ?? 0).toFixed(1)}%</strong></article></div><div className="grid"><article className="panel chart-panel"><div className="panel-title"><h3>Resultado por operação</h3><span>Lucro líquido</span></div><ResponsiveContainer width="100%" height={260}><BarChart data={chart}><XAxis dataKey="name"/><YAxis/><Tooltip formatter={(v) => brl(Number(v))}/><Bar dataKey="lucro" fill="#e36b3d" radius={[4,4,0,0]}/></BarChart></ResponsiveContainer></article><article className="panel"><div className="panel-title"><h3>Status do portfólio</h3><span>{data?.propertyCount ?? 0} imóveis</span></div>{Object.entries(data?.byStatus ?? {}).map(([key, value]) => <div className="status-row" key={key}><span>{key.replaceAll('_',' ')}</span><strong>{value as number}</strong></div>)}</article></div></>; }
+function Dashboard() {
+  const { data, isLoading } = useQuery({
+    queryKey: ["dashboard"],
+    queryFn: async () => (await api.get("/dashboard")).data,
+  });
+  if (isLoading) return <p>Carregando painel...</p>;
+  const cards = [
+    ["Capital próprio investido", data?.capitalInvested ?? 0],
+    ["Custo total", data?.totalInvested ?? 0],
+    ["Venda projetada", data?.projectedSaleAmount ?? 0],
+    ["Valor vendido", data?.totalSold ?? 0],
+    ["Lucro realizado", data?.realizedProfit ?? data?.accumulatedProfit ?? 0],
+    ["Lucro projetado", data?.projectedProfit ?? 0],
+  ] as const;
+  const chart = data?.operations
+    ?.filter((item: any) => item.sale > 0)
+    .map((item: any) => ({ name: item.code, lucro: item.netProfit })) ?? [];
+  const statuses = [
+    ["Em análise", "EM_ANALISE"],
+    ["Arrematados", "ARREMATADO"],
+    ["Em regularização", "REGULARIZACAO"],
+    ["Em reforma", "REFORMA"],
+    ["Prontos para venda", "PRONTO_PARA_VENDA"],
+    ["Vendidos", "VENDIDO"],
+  ];
+  return <>
+    <div className="section-heading">
+      <div><p className="eyebrow">RESUMO EXECUTIVO</p><h1>Visão geral</h1></div>
+      <span className="date-chip">{data?.totalProperties ?? data?.propertyCount ?? 0} imóveis</span>
+    </div>
+    <div className="cards">
+      {cards.map(([label, value]) => <article className="metric" key={label}>
+        <span>{label}</span><strong>{brl(value)}</strong>
+      </article>)}
+      <article className="metric accent"><span>ROI médio realizado</span><strong>{Number(data?.averageRoi ?? 0).toFixed(1)}%</strong></article>
+    </div>
+    <div className="grid">
+      <article className="panel chart-panel">
+        <div className="panel-title"><h3>Lucro realizado por operação</h3><span>Imóveis vendidos</span></div>
+        <ResponsiveContainer width="100%" height={260}>
+          <BarChart data={chart}><XAxis dataKey="name"/><YAxis/><Tooltip formatter={(value) => brl(Number(value))}/><Bar dataKey="lucro" fill="#e36b3d" radius={[4,4,0,0]}/></BarChart>
+        </ResponsiveContainer>
+      </article>
+      <article className="panel">
+        <div className="panel-title"><h3>Status do portfólio</h3><span>{data?.propertyCount ?? 0} ativos</span></div>
+        {statuses.map(([label, key]) => <div className="status-row" key={key}><span>{label}</span><strong>{data?.byStatus?.[key] ?? 0}</strong></div>)}
+      </article>
+    </div>
+    <article className="panel dashboard-pending">
+      <div className="panel-title"><h3>Pendências</h3><span>Atualizado com as tarefas e documentos</span></div>
+      <div className="status-row"><span>Tarefas atrasadas</span><strong>{data?.overdueTasks ?? 0}</strong></div>
+      <div className="status-row"><span>Tarefas vencendo em 7 dias</span><strong>{data?.tasksDueSoon ?? 0}</strong></div>
+      <div className="status-row"><span>Documentos pendentes</span><strong>{data?.pendingDocuments ?? 0}</strong></div>
+      <div className="status-row"><span>Regularizações em andamento</span><strong>{data?.regularizationsInProgress ?? 0}</strong></div>
+    </article>
+  </>;
+}
 const emptyProperty = {
   title: "",
   type: "APARTAMENTO",
@@ -115,14 +170,18 @@ function Properties() {
   const [form, setForm] = useState(emptyProperty);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
+  const [propertyView, setPropertyView] = useState<"active" | "cancelled">("active");
   const [open, setOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [feedback, setFeedback] = useState("");
   const [caixaText, setCaixaText] = useState("");
   const [isImporting, setIsImporting] = useState(false);
   const properties: Property[] = data?.data ?? [];
+  const activeProperties = properties.filter((item) => item.status !== "CANCELADO");
+  const cancelledProperties = properties.filter((item) => item.status === "CANCELADO");
   const normalizedSearch = search.trim().toLocaleLowerCase();
-  const visibleProperties = properties.filter((item) =>
+  const propertiesInView = propertyView === "cancelled" ? cancelledProperties : activeProperties;
+  const visibleProperties = propertiesInView.filter((item) =>
     (!statusFilter || item.status === statusFilter) &&
       [item.code, item.title, item.city, item.neighborhood].some((value) =>
         value?.toLocaleLowerCase().includes(normalizedSearch),
@@ -230,6 +289,28 @@ function Properties() {
       <div className="section-heading">
         <div>
           <p className="eyebrow">ATIVOS</p>
+          <div className="detail-tabs" style={{ margin: "0 0 16px" }} role="tablist" aria-label="Visualização dos imóveis">
+            <button
+              type="button"
+              role="tab"
+              aria-selected={propertyView === "active"}
+              className={propertyView === "active" ? "detail-tab active" : "detail-tab"}
+              onClick={() => {
+                setPropertyView("active");
+                setStatusFilter("");
+              }}
+            >Ativos ({activeProperties.length})</button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={propertyView === "cancelled"}
+              className={propertyView === "cancelled" ? "detail-tab active" : "detail-tab"}
+              onClick={() => {
+                setPropertyView("cancelled");
+                setStatusFilter("");
+              }}
+            >Cancelados ({cancelledProperties.length})</button>
+          </div>
           <h1>Imóveis</h1>
         </div>
         <button
@@ -489,7 +570,6 @@ function Properties() {
             <option value="REFORMA">Reforma</option>
             <option value="PRONTO_PARA_VENDA">Pronto para venda</option>
             <option value="VENDIDO">Vendido</option>
-            <option value="CANCELADO">Cancelado</option>
           </select>
         </div>
         {isLoading ? (
@@ -613,6 +693,29 @@ function Checklist() {
 	const groups: [string, ChecklistItem[]][] = Object.entries(checklistItems.reduce<Record<string, ChecklistItem[]>>((result, item) => { (result[item.category] ??= []).push(item); return result; }, {}));
 	return <><div className="section-heading"><div><p className="eyebrow">ACOMPANHAMENTO DO IMÓVEL</p><h1>Checklist</h1></div><span className="date-chip">{data?.progress?.percentage ?? 0}% concluído</span></div><div className="panel checklist-summary"><div><strong>{data?.progress?.completed ?? 0} de {data?.progress?.total ?? 0}</strong><span> etapas concluídas</span></div><div className="progress-track"><div className="progress-value" style={{ width: `${data?.progress?.percentage ?? 0}%` }} /></div></div>{groups.map(([category, items]) => <section className="checklist-group" key={category}><div className="panel-title"><h3>{category}</h3><span>{items.filter(item => item.status === 'CONCLUIDO').length}/{items.length}</span></div><div className="panel checklist-items">{items.map(item => <div className="checklist-item" key={item.id}><div className="checklist-main"><input type="checkbox" checked={item.status === 'CONCLUIDO'} onChange={event => updateMutation.mutate({ id: item.id, payload: { status: event.target.checked ? 'CONCLUIDO' : 'PENDENTE' } })} /><div><strong>{item.title}</strong><p>{item.description}</p></div></div><select value={item.status} onChange={event => updateMutation.mutate({ id: item.id, payload: { status: event.target.value } })}><option value="PENDENTE">Pendente</option><option value="EM_ANDAMENTO">Em andamento</option><option value="CONCLUIDO">Concluído</option><option value="NAO_APLICAVEL">Não aplicável</option></select></div>)}</div></section>)}</>;
 }
-function Reports() { const { data } = useQuery({ queryKey: ['dashboard'], queryFn: async () => (await api.get('/dashboard')).data }); return <><div className="section-heading"><div><p className="eyebrow">ANÁLISES</p><h1>Relatórios</h1></div></div><div className="grid reports"><article className="panel"><h3>Rentabilidade consolidada</h3><p className="big-number">{(data?.averageRoi ?? 0).toFixed(1)}%</p><p className="muted">ROI médio do portfólio vendido</p><button className="secondary">Exportar relatório</button></article><article className="panel"><h3>Operações monitoradas</h3><p className="big-number">{data?.propertyCount ?? 0}</p><p className="muted">imóveis no ciclo de investimento</p><LineChart width={360} height={120} data={data?.operations ?? []}><Line type="monotone" dataKey="netProfit" stroke="#285c58" strokeWidth={3}/></LineChart></article></div></>; }
-function App() { const [logged, setLogged] = useState(Boolean(localStorage.getItem(getTokenKey()))); if (!logged) return <Routes><Route path="/register" element={<Register onLogin={() => setLogged(true)} />} /><Route path="/login" element={<Login onLogin={() => setLogged(true)} />} /><Route path="*" element={<Login onLogin={() => setLogged(true)} />} /></Routes>; return <Shell><Routes><Route path="/" element={<Dashboard />} /><Route path="/users/new" element={<Register onLogin={() => setLogged(true)} authenticated />} /><Route path="/properties" element={<Properties />} /><Route path="/properties/:propertyId" element={<PropertyDetailPage />} /><Route path="/partners" element={<PartnersPage />} /><Route path="/properties/:propertyId/checklist" element={<ChecklistPage />} /><Route path="/operations" element={<Navigate to="/operations/expenses" replace />} /><Route path="/operations/expenses" element={<ExpensesPage />} /><Route path="/operations/purchases" element={<OperationsTransactions mode="purchase" />} /><Route path="/operations/sales" element={<OperationsTransactions mode="sale" />} /><Route path="/operations/simulation" element={<SimulationPage />} /><Route path="/reports" element={<Reports />} /><Route path="*" element={<Navigate to="/" />} /></Routes></Shell>; }
+function Reports() { const { data } = useQuery({ queryKey: ['dashboard'], queryFn: async () => (await api.get('/dashboard')).data }); return <><div className="section-heading"><div><p className="eyebrow">ANÁLISES</p><h1>Relatórios</h1></div></div><div className="grid reports"><article className="panel"><h3>Rentabilidade consolidada</h3><p className="big-number">{Number(data?.averageRoi ?? 0).toFixed(1)}%</p><p className="muted">ROI médio do portfólio vendido</p><button className="secondary">Exportar relatório</button></article><article className="panel"><h3>Operações monitoradas</h3><p className="big-number">{data?.propertyCount ?? 0}</p><p className="muted">imóveis no ciclo de investimento</p><LineChart width={360} height={120} data={data?.operations ?? []}><Line type="monotone" dataKey="netProfit" stroke="#285c58" strokeWidth={3}/></LineChart></article></div></>; }
+function App() {
+  const [logged, setLogged] = useState(Boolean(localStorage.getItem(getTokenKey())));
+  if (!logged)
+    return <Routes>
+      <Route path="/register" element={<Register onLogin={() => setLogged(true)} />} />
+      <Route path="/login" element={<Login onLogin={() => setLogged(true)} />} />
+      <Route path="*" element={<Login onLogin={() => setLogged(true)} />} />
+    </Routes>;
+  return <Shell><Routes>
+    <Route path="/" element={<Dashboard />} />
+    <Route path="/users/new" element={<Register onLogin={() => setLogged(true)} authenticated />} />
+    <Route path="/properties" element={<Properties />} />
+    <Route path="/properties/:propertyId" element={<PropertyDetailPage />} />
+    <Route path="/properties/:propertyId/:feature" element={<PropertyDetailPage />} />
+    <Route path="/partners" element={<PartnersPage />} />
+    <Route path="/operations" element={<Navigate to="/operations/expenses" replace />} />
+    <Route path="/operations/expenses" element={<ExpensesPage />} />
+    <Route path="/operations/purchases" element={<OperationsTransactions mode="purchase" />} />
+    <Route path="/operations/sales" element={<OperationsTransactions mode="sale" />} />
+    <Route path="/operations/simulation" element={<SimulationPage />} />
+    <Route path="/reports" element={<Reports />} />
+    <Route path="*" element={<Navigate to="/" />} />
+  </Routes></Shell>;
+}
 export default App;

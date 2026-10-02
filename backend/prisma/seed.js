@@ -37,7 +37,11 @@ const client_1 = require("@prisma/client");
 const bcrypt = __importStar(require("bcryptjs"));
 const prisma = new client_1.PrismaClient();
 async function main() {
-    const passwordHash = await bcrypt.hash('Admin@123', 10);
+    const seedAdminPassword = process.env.SEED_ADMIN_PASSWORD;
+    if (!seedAdminPassword) {
+        throw new Error('SEED_ADMIN_PASSWORD must be set to run the seed');
+    }
+    const passwordHash = await bcrypt.hash(seedAdminPassword, 10);
     await prisma.user.upsert({ where: { email: 'admin@admin.com' }, update: {}, create: { name: 'Administrador', email: 'admin@admin.com', passwordHash, role: client_1.Role.ADMIN } });
     const property = await prisma.property.upsert({ where: { code: 'CF-001' }, update: {}, create: { code: 'CF-001', title: 'Apartamento modelo', type: client_1.PropertyType.APARTAMENTO, address: 'Rua das Flores', number: '100', neighborhood: 'Centro', city: 'Sao Paulo', state: 'SP', status: client_1.PropertyStatus.EM_ANALISE, description: 'Imovel de exemplo para validar o primeiro acesso.' } });
     await prisma.auction.upsert({ where: { propertyId: property.id }, update: {}, create: { propertyId: property.id, auctioneer: 'Leiloeiro Oficial', auctionValue: 180000, auctionDate: new Date() } });

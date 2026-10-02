@@ -70,6 +70,14 @@ export class PropertiesService implements OnModuleInit, OnModuleDestroy {
             toStatus: "CANCELADO",
           },
         });
+        await transaction.propertyEvent.create({
+          data: {
+            propertyId: property.id,
+            type: "STATUS_CHANGE",
+            title: "Análise cancelada por prazo vencido",
+            description: "O prazo de negociação foi encerrado.",
+          },
+        });
       }
 
       return { count };
@@ -131,7 +139,7 @@ export class PropertiesService implements OnModuleInit, OnModuleDestroy {
         skip: (page - 1) * limit,
         take: limit,
         include: { auction: true, sale: true },
-        orderBy: { createdAt: "desc" },
+        orderBy: { updatedAt: "desc" },
       }),
       this.prisma.property.count({ where }),
     ]).then(([data, total]) => ({
@@ -350,7 +358,7 @@ export class PropertiesService implements OnModuleInit, OnModuleDestroy {
     await this.checklists.ensure(property.id);
     return property;
   }
-  async update(id: string, data: Partial<PropertyDto>) {
+  async update(id: string, data: Partial<PropertyDto>, userId?: string) {
     const current = await this.findOne(id);
     const rawDeadline: unknown = data.negotiationDeadline;
     const negotiationDeadline =
@@ -411,6 +419,15 @@ export class PropertiesService implements OnModuleInit, OnModuleDestroy {
             propertyId: id,
             fromStatus: current.status,
             toStatus: data.status,
+          },
+        });
+        await transaction.propertyEvent.create({
+          data: {
+            propertyId: id,
+            userId,
+            type: "STATUS_CHANGE",
+            title: "Status do imóvel alterado",
+            description: `${current.status} → ${data.status}`,
           },
         });
       }

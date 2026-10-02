@@ -50,6 +50,16 @@ enum ExpenseCategory {
   TAXAS
   OUTROS
 }
+enum FinancialCostCategory {
+  ACQUISITION
+  REGULARIZATION
+  POSSESSION
+  RENOVATION
+  OPERATIONAL
+  FINANCING
+  SALE
+  OTHER
+}
 enum RenovationStatus {
   PLANEJADA
   EM_ANDAMENTO
@@ -67,6 +77,146 @@ enum PartnerType {
   EMPREITEIRA
   COMPRADOR
 }
+enum AcquisitionStatus {
+  PLANNED
+  COMPLETED
+  CANCELLED
+}
+enum AcquisitionPaymentMethod {
+  OWN_RESOURCES
+  FGTS
+  FINANCING
+  FGTS_AND_OWN_RESOURCES
+  FINANCING_AND_OWN_RESOURCES
+  FGTS_AND_FINANCING
+  MIXED
+  OTHER
+}
+enum AcquisitionSource {
+  AUCTION
+  DIRECT
+  PREFERENCE
+  ONLINE
+  OTHER
+}
+enum PropertyDocumentType {
+  REGISTRY
+  AUCTION_NOTICE
+  PURCHASE_CONTRACT
+  TAX
+  CERTIFICATE
+  PHOTO
+  OTHER
+  EDITAL
+  ANUNCIO_CAIXA
+  MATRICULA
+  CERTIDAO_MATRICULA
+  TERMO_ARREMATACAO
+  COMPROVANTE_PAGAMENTO
+  COMPROVANTE_FGTS
+  CONTRATO_CAIXA
+  ITBI
+  COMPROVANTE_ITBI
+  PROTOCOLO_CARTORIO
+  REGISTRO_IMOVEL
+  MATRICULA_ATUALIZADA
+  IPTU
+  CONDOMINIO
+  VISTORIA
+  ORCAMENTO
+  NOTA_FISCAL
+  FOTO
+  CONTRATO_VENDA
+  OUTRO
+}
+enum PropertyDocumentStatus {
+  PENDING
+  VALID
+  EXPIRED
+  REJECTED
+  RECEIVED
+  VALIDATED
+  CANCELLED
+  PENDENTE
+  RECEBIDO
+  VALIDADO
+  VENCIDO
+  CANCELADO
+}
+enum RegularizationStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  COMPLETED
+  BLOCKED
+  PENDENTE
+  EM_ANDAMENTO
+  CONCLUIDA
+  BLOQUEADA
+}
+enum RegularizationTaskStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  BLOCKED
+  CANCELLED
+}
+enum RegularizationTaskCategory {
+  CAIXA
+  CARTORIO
+  PREFEITURA
+  ITBI
+  CONDOMINIO
+  DOCUMENTACAO
+  JURIDICO
+  OUTROS
+}
+enum PossessionStatus {
+  NOT_TAKEN
+  PENDING
+  TAKEN
+  DISPUTED
+  VACANT
+}
+enum OccupationStatus {
+  UNKNOWN
+  VACANT
+  OCCUPIED
+  FORMER_OWNER
+  TENANT
+  THIRD_PARTY
+  DISPUTED
+}
+enum PropertyEventType {
+  NOTE
+  STATUS_CHANGE
+  DOCUMENT
+  POSSESSION
+  REGULARIZATION
+  EXPENSE
+  SALE
+  OTHER
+  ANALISE
+  LANCE
+  ARREMATACAO
+  PAGAMENTO
+  FGTS
+  FINANCIAMENTO
+  ITBI
+  CARTORIO
+  REFORMA
+  DOCUMENTO
+  REGULARIZACAO
+  POSSE
+  DESPESA
+  VENDA
+  OUTRO
+}
+enum SaleScenarioStatus {
+  DRAFT
+  ACTIVE
+  SELECTED
+  ARCHIVED
+}
 
 model User {
   id           String   @id @default(uuid())
@@ -77,6 +227,7 @@ model User {
   active       Boolean  @default(true)
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
+  events       PropertyEvent[]
   @@map("users")
 }
 
@@ -124,6 +275,12 @@ model Property {
   sale            Sale?
   checklist       PropertyChecklist?
   statusHistory   PropertyStatusHistory[]
+  acquisition     Acquisition?
+  documents       PropertyDocument[]
+  regularization  PropertyRegularization?
+  possession      PropertyPossession?
+  events          PropertyEvent[]
+  saleScenarios   SaleScenario[]
   @@index([city, neighborhood, status, type])
   @@map("properties")
 }
@@ -191,6 +348,8 @@ model Expense {
   id          String          @id @default(uuid())
   propertyId  String          @map("property_id")
   category    ExpenseCategory
+  financialCategory FinancialCostCategory? @map("financial_category")
+  renovationId String?         @map("renovation_id")
   description String
   amount      Decimal         @db.Decimal(14,2)
   date        DateTime
@@ -198,7 +357,9 @@ model Expense {
   contractor  String?
   notes       String?
   property    Property        @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  renovation  Renovation?     @relation(fields: [renovationId], references: [id], onDelete: SetNull)
   @@index([propertyId, category, date])
+  @@index([renovationId, date])
   @@map("expenses")
 }
 
@@ -208,11 +369,13 @@ model Renovation {
   description   String
   supplier      String?
   plannedAmount Decimal?         @map("planned_amount") @db.Decimal(14,2)
+  contractedAmount Decimal?      @map("contracted_amount") @db.Decimal(14,2)
   actualAmount  Decimal?         @map("actual_amount") @db.Decimal(14,2)
   startDate     DateTime?        @map("start_date")
   endDate       DateTime?        @map("end_date")
   status        RenovationStatus @default(PLANEJADA)
   property      Property         @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  expenses      Expense[]
   @@map("renovations")
 }
 
@@ -227,4 +390,149 @@ model Sale {
   notes       String?
   property    Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
   @@map("sales")
+}
+
+model Acquisition {
+  id                    String                    @id @default(uuid())
+  propertyId            String                    @unique @map("property_id")
+  purchasePrice         Decimal?                   @map("purchase_price") @db.Decimal(14,2)
+  auctioneerCommission  Decimal?                   @map("auctioneer_commission") @db.Decimal(14,2)
+  ownResourcesAmount    Decimal?                   @map("own_resources_amount") @db.Decimal(14,2)
+  fgtsAmount            Decimal?                   @map("fgts_amount") @db.Decimal(14,2)
+  financingAmount       Decimal?                   @map("financing_amount") @db.Decimal(14,2)
+  otherResourcesAmount  Decimal?                   @map("other_resources_amount") @db.Decimal(14,2)
+  purchaseDate          DateTime?                  @map("purchase_date")
+  acquisitionDate       DateTime?                  @map("acquisition_date")
+  paymentDate           DateTime?                  @map("payment_date")
+  paymentMethod         AcquisitionPaymentMethod?  @map("payment_method")
+  status                AcquisitionStatus          @default(PLANNED)
+  source                AcquisitionSource          @default(AUCTION)
+  notes                 String?
+  createdAt             DateTime                   @default(now()) @map("created_at")
+  updatedAt             DateTime                   @updatedAt @map("updated_at")
+  property              Property                   @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@index([status, purchaseDate])
+  @@map("acquisitions")
+}
+
+model PropertyDocument {
+  id         String                 @id @default(uuid())
+  propertyId String                 @map("property_id")
+  type       PropertyDocumentType
+  status     PropertyDocumentStatus @default(PENDING)
+  title      String
+  fileName   String?                @map("file_name")
+  filePath   String?                @map("file_path")
+  mimeType   String?                @map("mime_type")
+  fileSize   Int?                   @map("file_size")
+  documentDate DateTime?            @map("document_date")
+  issuedAt   DateTime?              @map("issued_at")
+  expiresAt  DateTime?              @map("expires_at")
+  notes      String?
+  uploadedAt DateTime               @default(now()) @map("uploaded_at")
+  createdAt  DateTime               @default(now()) @map("created_at")
+  updatedAt  DateTime               @updatedAt @map("updated_at")
+  property   Property               @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@index([propertyId, type, status])
+  @@index([expiresAt])
+  @@map("property_documents")
+}
+
+model PropertyRegularization {
+  id          String               @id @default(uuid())
+  propertyId  String               @unique @map("property_id")
+  status      RegularizationStatus @default(NOT_STARTED)
+  startedAt   DateTime?            @map("started_at")
+  completedAt DateTime?            @map("completed_at")
+  notes       String?
+  createdAt   DateTime             @default(now()) @map("created_at")
+  updatedAt   DateTime             @updatedAt @map("updated_at")
+  property    Property             @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  tasks       RegularizationTask[]
+
+  @@index([status])
+  @@map("property_regularizations")
+}
+
+model RegularizationTask {
+  id               String                    @id @default(uuid())
+  regularizationId String                    @map("regularization_id")
+  category         RegularizationTaskCategory @default(OUTROS)
+  title            String
+  description      String?
+  status           RegularizationTaskStatus  @default(PENDING)
+  dueDate          DateTime?                 @map("due_date")
+  completedAt      DateTime?                 @map("completed_at")
+  responsible      String?
+  cost             Decimal?                  @db.Decimal(14,2)
+  notes            String?
+  sortOrder        Int                       @default(0) @map("sort_order")
+  createdAt        DateTime                  @default(now()) @map("created_at")
+  updatedAt        DateTime                  @updatedAt @map("updated_at")
+  regularization   PropertyRegularization    @relation(fields: [regularizationId], references: [id], onDelete: Cascade)
+
+  @@index([regularizationId, status, dueDate])
+  @@map("regularization_tasks")
+}
+
+model PropertyPossession {
+  id             String          @id @default(uuid())
+  propertyId     String          @unique @map("property_id")
+  status         PossessionStatus @default(NOT_TAKEN)
+  occupationStatus OccupationStatus? @map("occupation_status")
+  possessionDate DateTime?       @map("possession_date")
+  keyReceivedDate DateTime?      @map("key_received_date")
+  inspectionDate DateTime?       @map("inspection_date")
+  occupant       String?
+  notes          String?
+  createdAt      DateTime        @default(now()) @map("created_at")
+  updatedAt      DateTime        @updatedAt @map("updated_at")
+  property       Property        @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@index([status, possessionDate])
+  @@map("property_possessions")
+}
+
+model PropertyEvent {
+  id          String            @id @default(uuid())
+  propertyId  String            @map("property_id")
+  userId      String?           @map("user_id")
+  type        PropertyEventType
+  title       String
+  description String?
+  occurredAt  DateTime          @default(now()) @map("occurred_at")
+  metadata    Json?
+  createdAt   DateTime          @default(now()) @map("created_at")
+  property    Property          @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  user        User?             @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([propertyId, occurredAt])
+  @@index([propertyId, type, occurredAt])
+  @@index([userId])
+  @@map("property_events")
+}
+
+model SaleScenario {
+  id                 String             @id @default(uuid())
+  propertyId         String             @map("property_id")
+  name               String
+  status             SaleScenarioStatus @default(DRAFT)
+  projectedSalePrice Decimal            @map("projected_sale_price") @db.Decimal(14,2)
+  brokeragePercent   Decimal?           @map("brokerage_percent") @db.Decimal(7,4)
+  projectedBrokerage Decimal            @default(0) @map("projected_brokerage") @db.Decimal(14,2)
+  projectedTaxes     Decimal            @default(0) @map("projected_taxes") @db.Decimal(14,2)
+  otherSaleCosts     Decimal            @default(0) @map("other_sale_costs") @db.Decimal(14,2)
+  netProfit          Decimal?           @map("net_profit") @db.Decimal(14,2)
+  roi                Decimal?           @db.Decimal(10,4)
+  expectedSaleDate   DateTime?          @map("expected_sale_date")
+  notes              String?
+  createdAt          DateTime           @default(now()) @map("created_at")
+  updatedAt          DateTime           @updatedAt @map("updated_at")
+  property           Property           @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@index([propertyId, status])
+  @@index([propertyId, expectedSaleDate])
+  @@map("sale_scenarios")
 }

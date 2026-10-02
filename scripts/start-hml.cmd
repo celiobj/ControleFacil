@@ -9,7 +9,7 @@ if errorlevel 1 (
   exit /b 1
 )
 
-start "ControleFacil HML Backend" /b cmd /c "set APP_ENV=hml&&set PORT=3001&&set DATABASE_URL=postgresql://postgres:slipclown@localhost:5432/controle_facil_hml?schema=public&&set JWT_SECRET=controle-facil-hml-local-secret&&node backend\dist\main.js"
+start "ControleFacil HML Backend" /b cmd /c "set APP_ENV=hml&&set PORT=3001&&node backend\dist\main.js"
 
 echo [ControleFacil] HML Backend: http://localhost:3001
 exit /b 0
