@@ -5,10 +5,33 @@ const currency = (value: number) =>
 const percent = (value: number) => `${value.toFixed(1).replace(".", ",")}%`;
 const numberValue = (value: string) => Number(value.replace(",", ".")) || 0;
 
-export default function SimulationPage() {
-  const [marketValue, setMarketValue] = useState("160000");
-  const [purchaseValue, setPurchaseValue] = useState("87228.13");
-  const [expensePercent, setExpensePercent] = useState("50");
+type SimulationPageProps = {
+  initialMarketValue?: number;
+  initialPurchaseValue?: number;
+  launchedExpenses?: number;
+};
+
+export default function SimulationPage({
+  initialMarketValue,
+  initialPurchaseValue,
+  launchedExpenses,
+}: SimulationPageProps = {}) {
+  const prefilled = initialPurchaseValue !== undefined;
+  const [marketValue, setMarketValue] = useState(
+    String(initialMarketValue ?? (prefilled ? 0 : 160000)),
+  );
+  const [purchaseValue, setPurchaseValue] = useState(
+    String(initialPurchaseValue ?? 87228.13),
+  );
+  const [expensePercent, setExpensePercent] = useState(
+    prefilled
+      ? String(
+          initialPurchaseValue
+            ? Number((((launchedExpenses ?? 0) / initialPurchaseValue) * 100).toFixed(2))
+            : 0,
+        )
+      : "50",
+  );
   const market = numberValue(marketValue);
   const purchase = numberValue(purchaseValue);
   const expenses = (purchase * numberValue(expensePercent)) / 100;

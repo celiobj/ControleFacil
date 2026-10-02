@@ -12,6 +12,7 @@ import {
 } from "recharts";
 import { api } from "./api";
 import PropertyOperationTab from "./PropertyOperationTab";
+import SimulationPage from "./SimulationPage";
 
 const brl = (value: unknown) =>
   Number(value ?? 0).toLocaleString("pt-BR", {
@@ -23,6 +24,11 @@ const date = (value?: string) =>
   value
     ? value.slice(0, 10).split("-").reverse().join("/")
     : "-";
+
+const appraisalFromNotes = (notes?: string | null) => {
+  const match = notes?.match(/Valor de avalia[çc][ãa]o:\s*R\$\s*([\d.]+(?:,\d+)?)/i);
+  return match ? Number(match[1].replace(/\./g, "").replace(",", ".")) : 0;
+};
 
 const negotiationTypeLabel: Record<string, string> = {
   LEILAO_SFI: "Leilão SFI",
@@ -68,6 +74,7 @@ const workspaceTabs = [
   ["scenarios", "Cenários"],
   ["timeline", "Timeline"],
   ["checklist", "Checklist"],
+  ["simulation", "Simulação"],
 ] as const;
 
 export default function PropertyDetailPage() {
@@ -258,7 +265,12 @@ export default function PropertyDetailPage() {
           </ol>
         </> : <p className="empty-state">Ainda não há alterações de status registradas para este imóvel.</p>}
       </section>}
-      </> : <PropertyOperationTab tab={operationTab} property={property} />}
+      </> : operationTab === "simulation" ? <SimulationPage
+        key={property.id}
+        initialMarketValue={appraisalFromNotes(property.notes) || Number(auction?.appraisalValue ?? 0)}
+        initialPurchaseValue={Number(auction?.auctionValue ?? 0)}
+        launchedExpenses={(property.expenses ?? []).reduce((sum: number, expense: any) => sum + Number(expense.amount ?? 0), 0)}
+      /> : <PropertyOperationTab tab={operationTab} property={property} />}
     </>
   );
 }
