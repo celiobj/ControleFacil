@@ -21,6 +21,7 @@ const initialForm = {
   propertyId: "",
   propertySearch: "",
   category: "OUTROS",
+  status: "PENDENTE",
   financialCategory: "",
   renovationId: "",
   contractor: "",
@@ -86,6 +87,19 @@ export default function ExpensesPage() {
       setFeedback("Despesa excluída.");
     },
     onError: () => setFeedback("Não foi possível excluir a despesa."),
+  });
+  const statusMutation = useMutation({
+    mutationFn: ({ id, status }: { id: string; status: string }) =>
+      api.patch(`/expenses/${id}/status`, { status }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["expenses"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
+      queryClient.invalidateQueries({ queryKey: ["properties"] });
+      queryClient.invalidateQueries({ queryKey: ["property"] });
+      queryClient.invalidateQueries({ queryKey: ["property-v2"] });
+      setFeedback("Status da despesa atualizado.");
+    },
+    onError: () => setFeedback("Não foi possível atualizar o status da despesa."),
   });
   const update = (field: string, value: string) =>
     setForm((current) => ({ ...current, [field]: value }));
@@ -161,6 +175,16 @@ export default function ExpensesPage() {
               {expenseCategories.map((category) => (
                 <option key={category}>{category}</option>
               ))}
+            </select>
+          </label>
+          <label>
+            Situação *
+            <select
+              value={form.status}
+              onChange={(event) => update("status", event.target.value)}
+            >
+              <option value="PENDENTE">Pendente</option>
+              <option value="EFETIVADA">Efetivada</option>
             </select>
           </label>
           <label>
@@ -277,7 +301,8 @@ export default function ExpensesPage() {
                 <th>Descrição</th>
                 <th>Empreiteira</th>
                 <th>Valor</th>
-                              <th>Ações</th>
+                <th>Situação</th>
+                <th>Ações</th>
               </tr>
             </thead>
             <tbody>
@@ -300,6 +325,22 @@ export default function ExpensesPage() {
                         currency: "BRL",
                       })}
                     </strong>
+                  </td>
+                  <td>
+                    <select
+                      aria-label={`Situação da despesa ${expense.description}`}
+                      value={expense.status ?? "EFETIVADA"}
+                      disabled={statusMutation.isPending}
+                      onChange={(event) =>
+                        statusMutation.mutate({
+                          id: expense.id,
+                          status: event.target.value,
+                        })
+                      }
+                    >
+                      <option value="PENDENTE">Pendente</option>
+                      <option value="EFETIVADA">Efetivada</option>
+                    </select>
                   </td>
                   <td>
                     <button

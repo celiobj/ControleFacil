@@ -1,5 +1,9 @@
 import { Inject, Injectable } from "@nestjs/common";
-import { ExpenseCategory, FinancialCostCategory } from "@prisma/client";
+import {
+  ExpenseCategory,
+  ExpenseStatus,
+  FinancialCostCategory,
+} from "@prisma/client";
 import { PrismaService } from "../prisma.service";
 
 @Injectable()
@@ -15,6 +19,7 @@ export class OperationsService {
   createExpense(data: {
     propertyId: string;
     category: ExpenseCategory;
+    status?: ExpenseStatus;
     financialCategory?: FinancialCostCategory;
     renovationId?: string;
     description: string;
@@ -25,7 +30,17 @@ export class OperationsService {
     notes?: string;
   }) {
     return this.prisma.expense.create({
-      data: { ...data, date: new Date(data.date) },
+      data: {
+        ...data,
+        status: data.status ?? ExpenseStatus.PENDENTE,
+        date: new Date(data.date),
+      },
+    });
+  }
+  updateExpenseStatus(id: string, status: ExpenseStatus) {
+    return this.prisma.expense.update({
+      where: { id },
+      data: { status },
     });
   }
   deleteExpense(id: string) {

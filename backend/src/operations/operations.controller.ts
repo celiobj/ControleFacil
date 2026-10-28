@@ -5,17 +5,25 @@ import {
   Get,
   Inject,
   Param,
+  Patch,
   Post,
   Query,
   Req,
   UseGuards,
 } from "@nestjs/common";
 import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
+import { ExpenseStatus } from "@prisma/client";
+import { IsEnum } from "class-validator";
 import { Request } from "express";
 import { JwtGuard } from "../auth/jwt.guard";
 import { OperationsService } from "./operations.service";
 
 type AuthenticatedRequest = Request & { user?: { sub?: string } };
+
+class ExpenseStatusDto {
+  @IsEnum(ExpenseStatus)
+  status!: ExpenseStatus;
+}
 
 @ApiTags("operations")
 @ApiBearerAuth()
@@ -30,6 +38,12 @@ export class OperationsController {
   }
   @Post("expenses") expense(@Body() body: any) {
     return this.service.createExpense(body);
+  }
+  @Patch("expenses/:id/status") updateExpenseStatus(
+    @Param("id") id: string,
+    @Body() body: ExpenseStatusDto,
+  ) {
+    return this.service.updateExpenseStatus(id, body.status);
   }
   @Delete("expenses/:id") removeExpense(@Param("id") id: string) {
     return this.service.deleteExpense(id);

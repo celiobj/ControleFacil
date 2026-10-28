@@ -83,4 +83,21 @@ describe("FinancialService", () => {
 
     expect(result.totalInvested.toFixed(2)).toBe("0.30");
   });
+
+  it("keeps pending expenses out of actual costs and includes them in planned costs", () => {
+    const result = service.calculate({
+      auction: { auctionValue: 100 },
+      expenses: [
+        { amount: "20.00", status: "EFETIVADA" },
+        { amount: "35.50", status: "PENDENTE" },
+      ],
+      renovations: [],
+      sale: null,
+    });
+
+    expect(result.expenses.toFixed(2)).toBe("20.00");
+    expect(result.pendingExpenses.toFixed(2)).toBe("35.50");
+    expect(result.costTotal.toFixed(2)).toBe("120.00");
+    expect(result.plannedCostTotal.toFixed(2)).toBe("155.50");
+  });
 });

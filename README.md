@@ -37,6 +37,8 @@ Frontend: http://localhost:5173
 API: http://localhost:3000  
 Swagger: http://localhost:3000/docs
 
+O frontend adapta automaticamente a navegação e os formulários para telas móveis, mantendo os mesmos dados e funcionalidades da versão desktop. Em celulares, a navegação principal fica na barra inferior e as áreas restantes ficam em “Mais opções”.
+
 ## Ambientes locais
 
 Há dois ambientes locais independentes para testar alterações sem modificar os dados de produção:
@@ -141,6 +143,7 @@ O checklist mantém itens personalizados e concluídos. Quando novas tarefas pad
 - Regularização: `GET|POST /properties/:id/regularization`, tarefas em `/properties/:id/regularization/tasks` e atualizações em `/regularization/:id` e `/regularization/tasks/:id`.
 - Posse: `GET|POST /properties/:id/possession` e `PATCH /possession/:id`.
 - Financeiro: `GET /properties/:id/financial`.
+- Despesas: cada lançamento tem status `PENDENTE` ou `EFETIVADA`. Novas despesas começam pendentes; pendências entram nas projeções, e somente despesas efetivadas entram nos custos reais. Despesas existentes são migradas como efetivadas para preservar os totais anteriores.
 - Timeline: `GET|POST /properties/:id/events`.
 - Cenários: `GET|POST /properties/:id/scenarios` e `PATCH /scenarios/:id`.
 

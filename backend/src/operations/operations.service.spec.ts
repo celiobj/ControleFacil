@@ -1,4 +1,5 @@
 import { OperationsService } from "./operations.service";
+import { ExpenseStatus } from "@prisma/client";
 
 describe("OperationsService status history", () => {
   const createPrisma = () => {
@@ -51,6 +52,46 @@ describe("OperationsService status history", () => {
         fromStatus: "EM_ANALISE",
         toStatus: "VENDIDO",
       },
+    });
+  });
+
+  it("creates expenses as pending by default", async () => {
+    const prisma = {
+      expense: {
+        create: jest.fn().mockResolvedValue({ id: "expense-1" }),
+      },
+    } as any;
+    const service = new OperationsService(prisma);
+
+    await service.createExpense({
+      propertyId: "property-1",
+      category: "OUTROS",
+      description: "Taxa prevista",
+      amount: 100,
+      date: "2026-10-06",
+    });
+
+    expect(prisma.expense.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        status: ExpenseStatus.PENDENTE,
+        date: new Date("2026-10-06"),
+      }),
+    });
+  });
+
+  it("allows updating an expense status", async () => {
+    const prisma = {
+      expense: {
+        update: jest.fn().mockResolvedValue({ id: "expense-1" }),
+      },
+    } as any;
+    const service = new OperationsService(prisma);
+
+    await service.updateExpenseStatus("expense-1", ExpenseStatus.EFETIVADA);
+
+    expect(prisma.expense.update).toHaveBeenCalledWith({
+      where: { id: "expense-1" },
+      data: { status: ExpenseStatus.EFETIVADA },
     });
   });
 });

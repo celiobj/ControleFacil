@@ -120,7 +120,6 @@ export default function PropertyDetailPage() {
           <h1>{property.title}</h1>
           <p className="muted">{property.code} · {property.neighborhood}, {property.city}</p>
         </div>
-        <Link className="secondary" to={`/properties/${property.id}/checklist`}>Checklist</Link>
       </div>
 
       <nav className="detail-tabs operation-tabs" role="tablist" aria-label="Etapas da operação">
@@ -188,8 +187,8 @@ export default function PropertyDetailPage() {
 
       <section className="panel detail-table-panel">
         <div className="panel-title"><h3>Despesas</h3><span>{property.expenses.length} lançamentos</span></div>
-        {property.expenses.length ? <table><thead><tr><th>Data</th><th>Categoria</th><th>Descrição</th><th>Valor</th><th>Observações</th></tr></thead><tbody>
-          {property.expenses.map((expense: any) => <tr key={expense.id}><td>{date(expense.date)}</td><td>{expense.category}</td><td>{expense.description}</td><td>{brl(expense.amount)}</td><td>{valueOrDash(expense.notes)}</td></tr>)}
+        {property.expenses.length ? <table><thead><tr><th>Data</th><th>Categoria</th><th>Descrição</th><th>Valor</th><th>Situação</th><th>Observações</th></tr></thead><tbody>
+          {property.expenses.map((expense: any) => <tr key={expense.id}><td>{date(expense.date)}</td><td>{expense.category}</td><td>{expense.description}</td><td>{brl(expense.amount)}</td><td>{expense.status === "PENDENTE" ? "Pendente" : "Efetivada"}</td><td>{valueOrDash(expense.notes)}</td></tr>)}
         </tbody></table> : <p className="empty-state">Nenhuma despesa registrada para este imóvel.</p>}
       </section>
 

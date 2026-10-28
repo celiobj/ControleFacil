@@ -18,6 +18,8 @@ export interface FinancialResult {
   capitalInvested: Prisma.Decimal;
   saleAmount: Prisma.Decimal;
   expenses: Prisma.Decimal;
+  pendingExpenses: Prisma.Decimal;
+  plannedCostTotal: Prisma.Decimal;
   renovations: Prisma.Decimal;
   costTotal: Prisma.Decimal;
   sale: Prisma.Decimal;
@@ -60,6 +62,7 @@ export class FinancialService {
       category?: string;
       financialCategory?: string | null;
       renovationId?: string | null;
+      status?: string;
     }>;
     renovations: Array<{
       id?: string;
@@ -85,7 +88,13 @@ export class FinancialService {
     };
     const renovationExpenseIds = new Set<string>();
     let hasUnlinkedRenovationExpenses = false;
-    for (const expense of property.expenses) {
+    const effectiveExpenses = property.expenses.filter(
+      (expense) => expense.status !== "PENDENTE",
+    );
+    const pendingExpenses = property.expenses
+      .filter((expense) => expense.status === "PENDENTE")
+      .reduce((sum, expense) => sum.plus(money(expense.amount)), money(0));
+    for (const expense of effectiveExpenses) {
       const category = expense.financialCategory ?? this.legacyCategory(expense.category);
       buckets[category] = (buckets[category] ?? money(0)).plus(
         money(expense.amount),
@@ -113,7 +122,7 @@ export class FinancialService {
     const possessionCosts = buckets.POSSESSION;
     const operationalCosts = buckets.OPERATIONAL;
     const financingCosts = buckets.FINANCING;
-    const expenses = property.expenses.reduce(
+    const expenses = effectiveExpenses.reduce(
       (sum, item) => sum.plus(money(item.amount)),
       money(0),
     );
@@ -156,10 +165,12 @@ export class FinancialService {
       capitalInvested,
       saleAmount: sale,
       expenses,
+      pendingExpenses,
       renovations,
       costTotal,
       sale,
       saleCosts,
+      plannedCostTotal: costTotal.plus(pendingExpenses),
       netProfit,
       roi,
     };

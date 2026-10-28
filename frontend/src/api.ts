@@ -16,12 +16,13 @@ export const setEnvironment = (environment: AppEnvironment) =>
 export const getTokenKey = (environment = getEnvironment()) =>
   `token_${environment}`;
 
+const apiHost = window.location.hostname;
 export const api = axios.create({
-  baseURL: environmentConfig[getEnvironment()].apiUrl,
+  baseURL: `http://${apiHost}:${getEnvironment() === "hml" ? 3001 : 3000}`,
 });
 api.interceptors.request.use((config) => {
   const environment = getEnvironment();
-  config.baseURL = environmentConfig[environment].apiUrl;
+  config.baseURL = `http://${apiHost}:${environment === "hml" ? 3001 : 3000}`;
   const token = localStorage.getItem(getTokenKey(environment));
   if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;

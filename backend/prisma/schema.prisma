@@ -50,6 +50,10 @@ enum ExpenseCategory {
   TAXAS
   OUTROS
 }
+enum ExpenseStatus {
+  PENDENTE
+  EFETIVADA
+}
 enum FinancialCostCategory {
   ACQUISITION
   REGULARIZATION
@@ -348,6 +352,7 @@ model Expense {
   id          String          @id @default(uuid())
   propertyId  String          @map("property_id")
   category    ExpenseCategory
+  status      ExpenseStatus   @default(EFETIVADA)
   financialCategory FinancialCostCategory? @map("financial_category")
   renovationId String?         @map("renovation_id")
   description String

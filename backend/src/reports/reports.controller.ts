@@ -19,7 +19,7 @@ export class ReportsController {
   }
   @Get("expenses") expenses() {
     return this.prisma.expense.groupBy({
-      by: ["category"],
+      by: ["category", "status"],
       _sum: { amount: true },
       _count: { id: true },
     });

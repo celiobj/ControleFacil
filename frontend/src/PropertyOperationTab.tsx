@@ -136,8 +136,9 @@ export default function PropertyOperationTab({
       ["Operação", data?.operationalCosts],
       ["Financeiro", data?.financingCosts],
       ["Venda", data?.saleCosts],
+      ["Despesas pendentes", data?.pendingExpenses],
     ];
-    return <section className="panel operation-panel"><div className="panel-title"><h3>Financeiro consolidado</h3><span>Calculado pela API</span></div><table className="detail-table"><tbody>{rows.map(([label, amount, extra]) => <tr key={String(label)}><th>{label}</th><td>{brl(amount)}{extra ? ` · comissão ${brl(extra)}` : ""}</td></tr>)}<tr><th>Total investido</th><td><strong>{brl(data?.totalInvested)}</strong></td></tr><tr><th>Capital próprio investido</th><td><strong>{brl(data?.capitalInvested)}</strong></td></tr><tr><th>Venda</th><td>{brl(data?.saleAmount)}</td></tr><tr><th>Resultado líquido</th><td><strong>{brl(data?.netProfit)}</strong></td></tr><tr><th>ROI</th><td>{Number(data?.roi ?? 0).toFixed(2)}%</td></tr></tbody></table></section>;
+    return <section className="panel operation-panel"><div className="panel-title"><h3>Financeiro consolidado</h3><span>Calculado pela API</span></div><table className="detail-table"><tbody>{rows.map(([label, amount, extra]) => <tr key={String(label)}><th>{label}</th><td>{brl(amount)}{extra ? ` · comissão ${brl(extra)}` : ""}</td></tr>)}<tr><th>Total investido</th><td><strong>{brl(data?.totalInvested)}</strong></td></tr><tr><th>Total previsto com pendências</th><td><strong>{brl(data?.plannedCostTotal)}</strong></td></tr><tr><th>Capital próprio investido</th><td><strong>{brl(data?.capitalInvested)}</strong></td></tr><tr><th>Venda</th><td>{brl(data?.saleAmount)}</td></tr><tr><th>Resultado líquido</th><td><strong>{brl(data?.netProfit)}</strong></td></tr><tr><th>ROI</th><td>{Number(data?.roi ?? 0).toFixed(2)}%</td></tr></tbody></table></section>;
   }
 
   if (tab === "documents") {
@@ -195,8 +196,11 @@ export default function PropertyOperationTab({
   }
 
   if (tab === "expenses") {
-    const expenses = property.expenses ?? [];
-    return <section className="panel operation-panel"><div className="panel-title"><h3>Despesas</h3><span>{expenses.length} lançamentos</span></div><div className="table-panel"><table><thead><tr><th>Data</th><th>Categoria</th><th>Descrição</th><th>Valor</th><th>Responsável</th><th>Ações</th></tr></thead><tbody>{expenses.map((item: any) => <tr key={item.id}><td>{date(item.date)}</td><td>{item.category}</td><td>{item.description}</td><td>{brl(item.amount)}</td><td>{item.contractor ?? "-"}</td><td><button className="table-action danger" type="button" disabled={mutation.isPending} onClick={() => { if (window.confirm("Excluir esta despesa?")) mutation.mutate({ url: `/expenses/${item.id}`, method: "delete" }); }}>Excluir</button></td></tr>)}</tbody></table></div><Link className="secondary" to="/operations/expenses">Registrar despesas</Link></section>;
+    const expenses = [...(property.expenses ?? [])].sort(
+      (first: any, second: any) =>
+        new Date(second.date).getTime() - new Date(first.date).getTime(),
+    );
+    return <section className="panel operation-panel"><div className="panel-title"><h3>Despesas</h3><span>{expenses.length} lançamentos</span></div><div className="table-panel"><table><thead><tr><th>Data</th><th>Categoria</th><th>Descrição</th><th>Valor</th><th>Responsável</th><th>Situação</th><th>Ações</th></tr></thead><tbody>{expenses.map((item: any) => <tr key={item.id}><td>{date(item.date)}</td><td>{item.category}</td><td>{item.description}</td><td>{brl(item.amount)}</td><td>{item.contractor ?? "-"}</td><td><select aria-label={`Situação da despesa ${item.description}`} value={item.status ?? "EFETIVADA"} disabled={mutation.isPending} onChange={(event) => updateStatus(`/expenses/${item.id}/status`, event.target.value)}><option value="PENDENTE">Pendente</option><option value="EFETIVADA">Efetivada</option></select></td><td><button className="table-action danger" type="button" disabled={mutation.isPending} onClick={() => { if (window.confirm("Excluir esta despesa?")) mutation.mutate({ url: `/expenses/${item.id}`, method: "delete" }); }}>Excluir</button></td></tr>)}</tbody></table></div><Link className="secondary" to="/operations/expenses">Registrar despesas</Link></section>;
   }
 
   if (tab === "sale") {

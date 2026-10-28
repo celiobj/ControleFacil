@@ -28,6 +28,35 @@ export class DashboardService {
         checklist: { include: { items: true } },
       },
     });
+    const monitoredProperties = properties.filter(
+      (property) =>
+        property.status !== "VENDIDO" && property.status !== "CANCELADO",
+    );
+    const monthlyAdditions = new Map<string, number>();
+    for (const property of monitoredProperties) {
+      const month = new Date(property.createdAt).toISOString().slice(0, 7);
+      monthlyAdditions.set(month, (monthlyAdditions.get(month) ?? 0) + 1);
+    }
+    const operationsByMonth: { month: string; count: number }[] = [];
+    if (monthlyAdditions.size > 0) {
+      const firstMonth = [...monthlyAdditions.keys()].sort()[0];
+      const [firstYear, firstMonthNumber] = firstMonth.split("-").map(Number);
+      const start = new Date(Date.UTC(firstYear, firstMonthNumber - 1, 1));
+      const current = new Date();
+      const end = new Date(
+        Date.UTC(current.getUTCFullYear(), current.getUTCMonth(), 1),
+      );
+      let cumulativeCount = 0;
+      for (
+        const monthDate = start;
+        monthDate <= end;
+        monthDate.setUTCMonth(monthDate.getUTCMonth() + 1)
+      ) {
+        const month = monthDate.toISOString().slice(0, 7);
+        cumulativeCount += monthlyAdditions.get(month) ?? 0;
+        operationsByMonth.push({ month, count: cumulativeCount });
+      }
+    }
     const totalProperties = await this.prisma.property.count();
     const rows = properties.map((property) => {
       const finances = this.financial.calculate(property);
@@ -36,6 +65,8 @@ export class DashboardService {
         code: property.code,
         title: property.title,
         costTotal: finances.costTotal,
+        plannedCostTotal: finances.plannedCostTotal,
+        pendingExpenses: finances.pendingExpenses,
         capitalInvested: finances.capitalInvested,
         sale: finances.sale,
         netProfit: finances.netProfit,
@@ -70,7 +101,7 @@ export class DashboardService {
               (sum, scenario) =>
                 sum
                   .plus(decimal(scenario.projectedSalePrice))
-                  .minus(row.costTotal)
+                  .minus(row.plannedCostTotal)
                   .minus(decimal(scenario.projectedBrokerage))
                   .minus(decimal(scenario.projectedTaxes))
                   .minus(decimal(scenario.otherSaleCosts)),
@@ -111,6 +142,10 @@ export class DashboardService {
     ).length;
     return {
       totalInvested,
+      pendingExpenses: rows.reduce(
+        (sum, row) => sum.plus(row.pendingExpenses),
+        decimal(0),
+      ),
       capitalInvested,
       totalSold: sold.reduce((sum, row) => sum.plus(row.sale), decimal(0)),
       accumulatedProfit: sold.reduce(
@@ -136,6 +171,8 @@ export class DashboardService {
             .toDecimalPlaces(4)
         : decimal(0),
       propertyCount: properties.length,
+      monitoredOperationsCount: monitoredProperties.length,
+      operationsByMonth,
       totalProperties,
       byStatus,
       overdueTasks,

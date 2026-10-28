@@ -1,0 +1,4 @@
+CREATE TYPE "ExpenseStatus" AS ENUM ('PENDENTE', 'EFETIVADA');
+
+ALTER TABLE "expenses"
+ADD COLUMN "status" "ExpenseStatus" NOT NULL DEFAULT 'EFETIVADA';
